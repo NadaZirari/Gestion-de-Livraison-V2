@@ -7,6 +7,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents a delivery that needs to be made to a customer.
+ * Contains delivery details including location, dimensions, and status.
+ */
 @Data
 @NoArgsConstructor
 @Entity
@@ -18,7 +22,7 @@ public class Delivery {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id")
+    @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
     
     @Column(nullable = false)
@@ -30,10 +34,13 @@ public class Delivery {
     @Column(nullable = false)
     private Double longitude;
     
+    @Column(nullable = false)
     private Double weight;
+    
+    @Column(nullable = false)
     private Double volume;
     
-    @Column(name = "time_window")
+    @Column(name = "time_window", nullable = false)
     private String timeWindow;
     
     @Enumerated(EnumType.STRING)
@@ -49,82 +56,31 @@ public class Delivery {
     @OneToMany(mappedBy = "delivery", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DeliveryHistory> deliveryHistories = new ArrayList<>();
     
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
+    
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
-
-    public Delivery() {}
-
-	
-
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
-
-	public String getAddress() {
-		return address;
-	}
-
-	public void setAddress(String address) {
-		this.address = address;
-	}
-
-	public double getLatitude() {
-		return latitude;
-	}
-
-	public void setLatitude(double latitude) {
-		this.latitude = latitude;
-	}
-
-	public double getLongitude() {
-		return longitude;
-	}
-
-	public void setLongitude(double longitude) {
-		this.longitude = longitude;
-	}
-
-	public double getWeight() {
-		return weight;
-	}
-
-	public void setWeight(double weight) {
-		this.weight = weight;
-	}
-
-	public double getVolume() {
-		return volume;
-	}
-
-	public void setVolume(double volume) {
-		this.volume = volume;
-	}
-
-	public String getTimeWindow() {
-		return timeWindow;
-	}
-
-	public void setTimeWindow(String timeWindow) {
-		this.timeWindow = timeWindow;
-	}
-
-	public void setStatus(DeliveryStatus status) {
-		this.status = status;
-	}
-
-
-
-	public DeliveryStatus getStatus() {
-		return status;
-	}
-
-
-
-    // Getters, Setters
+    
+    /**
+     * Adds a delivery history entry to this delivery.
+     * @param history The delivery history to add
+     */
+    public void addDeliveryHistory(DeliveryHistory history) {
+        deliveryHistories.add(history);
+        history.setDelivery(this);
+    }
+    
+    /**
+     * Removes a delivery history entry from this delivery.
+     * @param history The delivery history to remove
+     */
+    public void removeDeliveryHistory(DeliveryHistory history) {
+        deliveryHistories.remove(history);
+        history.setDelivery(null);
+    }
 }
