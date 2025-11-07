@@ -1,0 +1,63 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog 
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+
+    <changeSet id="1" author="nada">
+        <comment>Initial database schema for Delivery Management System V1</comment>
+        
+        <!-- Delivery Table -->
+        <createTable tableName="delivery">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="delivery_status" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="delivery_date" type="TIMESTAMP"/>
+            <column name="delivery_address" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Tour Table -->
+        <createTable tableName="tour">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tour_status" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="start_time" type="TIMESTAMP"/>
+            <column name="end_time" type="TIMESTAMP"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Delivery_Tour Join Table -->
+        <createTable tableName="delivery_tour">
+            <column name="delivery_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_delivery" referencedTableName="delivery" referencedColumnNames="id" deleteCascade="true"/>
+            </column>
+            <column name="tour_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_tour" referencedTableName="tour" referencedColumnNames="id" deleteCascade="true"/>
+            </column>
+        </createTable>
+        
+        <addPrimaryKey columnNames="delivery_id, tour_id" constraintName="pk_delivery_tour" tableName="delivery_tour"/>
+        
+    </changeSet>
+    
+</databaseChangeLog>
