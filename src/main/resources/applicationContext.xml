@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:jpa="http://www.springframework.org/schema/data/jpa"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+    xsi:schemaLocation="
+    http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd
+    http://www.springframework.org/schema/data/jpa https://www.springframework.org/schema/data/jpa/spring-jpa.xsd
+    http://www.springframework.org/schema/tx https://www.springframework.org/schema/tx/spring-tx.xsd
+    http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+    <!-- Activation des annotations de mapping @GetMapping, @PostMapping, etc. -->
+    <mvc:annotation-driven/>
+
+    <!-- Configuration de la base de données H2 -->
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="org.h2.Driver"/>
+        <property name="url" value="jdbc:h2:mem:deliverydb;DB_CLOSE_DELAY=-1"/>
+        <property name="username" value="sa"/>
+        <property name="password" value=""/>
+    </bean>
+
+    <!-- Configuration de l'EntityManagerFactory -->
+    <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="packagesToScan" value="com.delivrey.entity"/>
+        <property name="jpaVendorAdapter">
+            <bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter"/>
+        </property>
+        <property name="jpaProperties">
+            <props>
+                <prop key="hibernate.hbm2ddl.auto">update</prop>
+                <prop key="hibernate.dialect">org.hibernate.dialect.H2Dialect</prop>
+                <prop key="hibernate.show_sql">true</prop>
+            </props>
+        </property>
+    </bean>
+
+    <!-- Gestionnaire de transactions -->
+    <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+        <property name="entityManagerFactory" ref="entityManagerFactory"/>
+    </bean>
+
+    <!-- Activation des transactions -->
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+
+    <!-- Configuration des repositories JPA -->
+    <jpa:repositories base-package="com.delivrey.repository"
+                      entity-manager-factory-ref="entityManagerFactory"
+                      transaction-manager-ref="transactionManager">
+    </jpa:repositories>
+
+    <!-- Définition des optimiseurs -->
+    <bean id="nearestNeighborOptimizer" class="com.delivrey.service.NearestNeighborOptimizer"/>
+    <bean id="clarkeWrightOptimizer" class="com.delivrey.service.ClarkeWrightOptimizer"/>
+
+    <!-- Définition des services -->
+    <bean id="deliveryService" class="com.delivrey.service.DeliveryServiceImpl">
+        <constructor-arg ref="deliveryRepository"/>
+    </bean>
+    
+    <bean id="tourService" class="com.delivrey.service.TourServiceImpl">
+        <constructor-arg ref="deliveryRepository"/>
+        <constructor-arg ref="tourRepository"/>
+        <constructor-arg ref="nearestNeighborOptimizer"/>
+        <constructor-arg ref="clarkeWrightOptimizer"/>
+    </bean>
+    
+    <bean id="vehicleService" class="com.delivrey.service.VehicleServiceImpl">
+        <constructor-arg ref="vehicleRepository"/>
+    </bean>
+
+    <!-- WarehouseService est déjà défini avec l'ID warehouseServiceImpl par défaut -->
+    <!-- Suppression de la redéfinition pour éviter le conflit -->
+    
+    <!-- Les contrôleurs sont automatiquement détectés par le composant scan de Spring Boot -->
+
+</beans>
