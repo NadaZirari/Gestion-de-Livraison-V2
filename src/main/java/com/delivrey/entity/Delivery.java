@@ -56,6 +56,10 @@ public class Delivery {
     @OneToMany(mappedBy = "delivery", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DeliveryHistory> deliveryHistories = new ArrayList<>();
     
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tour_id")
+    private Tour tour;
+    
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();

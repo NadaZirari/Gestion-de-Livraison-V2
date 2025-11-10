@@ -2,6 +2,7 @@ package com.delivrey.config;
 
 import com.delivrey.entity.*;
 import com.delivrey.repository.*;
+import com.delivrey.repository.CustomerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
@@ -20,16 +21,19 @@ public class DatabaseSeeder implements CommandLineRunner {
     private final VehicleRepository vehicleRepository;
     private final DeliveryRepository deliveryRepository;
     private final TourRepository tourRepository;
+    private final CustomerRepository customerRepository;
 
     @Autowired
     public DatabaseSeeder(WarehouseRepository warehouseRepository,
                          VehicleRepository vehicleRepository,
                          DeliveryRepository deliveryRepository,
-                         TourRepository tourRepository) {
+                         TourRepository tourRepository,
+                         CustomerRepository customerRepository) {
         this.warehouseRepository = warehouseRepository;
         this.vehicleRepository = vehicleRepository;
         this.deliveryRepository = deliveryRepository;
         this.tourRepository = tourRepository;
+        this.customerRepository = customerRepository;
     }
 
     @Override
@@ -83,8 +87,18 @@ public class DatabaseSeeder implements CommandLineRunner {
     }
 
     private List<Delivery> seedDeliveries(Warehouse warehouse) {
-        // Créer des livraisons
+        // Create a sample customer
+        Customer customer = new Customer();
+        customer.setName("John Doe");
+        customer.setAddress("123 Main St, Paris");
+        customer.setLatitude(48.8566);
+        customer.setLongitude(2.3522);
+        customer.setPreferredTimeSlot("09:00-18:00");
+        customer = customerRepository.save(customer);
+
+        // Create deliveries
         Delivery delivery1 = new Delivery();
+        delivery1.setCustomer(customer);
         delivery1.setAddress("10 Rue de la Paix, 75001 Paris");
         delivery1.setLatitude(48.8698);
         delivery1.setLongitude(2.3073);
@@ -94,6 +108,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         delivery1.setTimeWindow("09:00-12:00");
 
         Delivery delivery2 = new Delivery();
+        delivery2.setCustomer(customer);
         delivery2.setAddress("20 Avenue des Champs-Élysées, 75008 Paris");
         delivery2.setLatitude(48.8709);
         delivery2.setLongitude(2.3030);
@@ -107,15 +122,20 @@ public class DatabaseSeeder implements CommandLineRunner {
     }
 
     private void seedTours(Vehicle vehicle, List<Delivery> deliveries) {
-        // Créer une tournée
+        // Create a new tour
         Tour tour = new Tour();
         tour.setTourDate(LocalDate.now().plusDays(1));
         tour.setVehicle(vehicle);
         
-        // Sauvegarder la tournée
+        // Save the tour first to get an ID
         Tour savedTour = tourRepository.save(tour);
         
-        // Mettre à jour les livraisons avec la tournée si nécessaire
-        // (selon la relation définie dans l'entité Delivery)
+        // Update each delivery with the tour
+        for (Delivery delivery : deliveries) {
+            delivery.setTour(savedTour);
+        }
+        
+        // Save the updated deliveries
+        deliveryRepository.saveAll(deliveries);
     }
 }
