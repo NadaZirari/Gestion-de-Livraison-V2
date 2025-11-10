@@ -8,7 +8,7 @@ spring:
   autoconfigure:
     exclude: org.springframework.cloud.function.context.config.ContextFunctionCatalogAutoConfiguration
   liquibase:
-    change-log: classpath:/db/db.changelog-master.xml
+    change-log: classpath:db/changelog/db.changelog-master.xml
   application:
     name: delivery-service
 
