@@ -110,6 +110,8 @@ public class DatabaseSeeder implements CommandLineRunner {
         delivery1.setWeight(5.0);
         delivery1.setVolume(0.5);
         delivery1.setTimeWindow("09:00-12:00");
+        delivery1.setCreatedAt(now);
+        delivery1.setUpdatedAt(now);
 
         Delivery delivery2 = new Delivery();
         delivery2.setCustomer(customer);
@@ -120,6 +122,8 @@ public class DatabaseSeeder implements CommandLineRunner {
         delivery2.setWeight(2.5);
         delivery2.setVolume(0.3);
         delivery2.setTimeWindow("14:00-17:00");
+        delivery2.setCreatedAt(now);
+        delivery2.setUpdatedAt(now);
 
         List<Delivery> deliveries = Arrays.asList(delivery1, delivery2);
         return deliveryRepository.saveAll(deliveries);
