@@ -14,6 +14,10 @@ public class Tour {
 
     private LocalDate tourDate;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "TOUR_STATUS", nullable = false)
+    private TourStatus tourStatus = TourStatus.PLANNED;
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "vehicle_id")
@@ -67,6 +71,14 @@ public class Tour {
 	public void setAlgorithmUsed(String algorithmUsed) {
 		this.algorithmUsed = algorithmUsed;
 	}
+
+    public TourStatus getTourStatus() {
+        return tourStatus;
+    }
+
+    public void setTourStatus(TourStatus tourStatus) {
+        this.tourStatus = tourStatus;
+    }
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "warehouse_id")

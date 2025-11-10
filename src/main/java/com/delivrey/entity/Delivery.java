@@ -25,7 +25,7 @@ public class Delivery {
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
     
-    @Column(nullable = false)
+    @Column(name = "DELIVERY_ADDRESS", nullable = false)
     private String address;
     
     @Column(nullable = false, columnDefinition = "DECIMAL(10,8)")
@@ -44,7 +44,7 @@ public class Delivery {
     private String timeWindow;
     
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "DELIVERY_STATUS", nullable = false)
     private DeliveryStatus status = DeliveryStatus.PENDING;
     
     @Column(name = "created_at", nullable = false, updatable = false)
