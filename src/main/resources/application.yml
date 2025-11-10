@@ -4,6 +4,9 @@ spring:
       on-profile: default
   main:
     allow-bean-definition-overriding: true
+    web-application-type: servlet
+  autoconfigure:
+    exclude: org.springframework.cloud.function.context.config.ContextFunctionCatalogAutoConfiguration
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.xml
   application:
