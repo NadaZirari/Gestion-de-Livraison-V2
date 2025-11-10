@@ -10,22 +10,40 @@ import com.delivrey.mapper.TourMapper;
 import com.delivrey.optimizer.TourOptimizer;
 import com.delivrey.repository.TourRepository;
 import com.delivrey.service.TourService;
+import com.delivrey.dto.TourDTO;
+import com.delivrey.entity.Delivery;
+import com.delivrey.entity.Tour;
+import com.delivrey.entity.TourStatus;
+import com.delivrey.event.TourStatusChangeEvent;
+import com.delivrey.exception.EntityNotFoundException;
+import com.delivrey.mapper.TourMapper;
+import com.delivrey.optimizer.TourOptimizer;
+import com.delivrey.repository.TourRepository;
+import com.delivrey.service.TourService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class TourServiceImpl implements TourService {
 
     private final TourRepository tourRepository;
+    
+    @Qualifier("nearestNeighbor")
     private final TourOptimizer nearestNeighborOptimizer;
+    
+    @Qualifier("clarkeWright")
     private final TourOptimizer clarkeWrightOptimizer;
+    
+    @Qualifier("aiOptimizer")
+    private final TourOptimizer aiOptimizer;
+    
     private final ApplicationEventPublisher eventPublisher;
     private final TourMapper tourMapper;
 
@@ -76,7 +94,7 @@ public class TourServiceImpl implements TourService {
 
     @Override
     public List<Delivery> getOptimizedTour(Long tourId, String algorithm) {
-        Tour tour = tourRepository.findByIdWithDeliveriesAndWarehouse(tourId)
+        Tour tour = tourRepository.findByIdWithDeliveriesAndWarehouse(tourId) 
             .orElseThrow(() -> new RuntimeException("Tour not found with id: " + tourId));
 
         List<Delivery> deliveries = new ArrayList<>(tour.getDeliveries());
@@ -92,9 +110,11 @@ public class TourServiceImpl implements TourService {
         }
         
         // Choose optimization algorithm
-        TourOptimizer optimizer = "CLARKE_WRIGHT".equalsIgnoreCase(algorithm) 
-            ? clarkeWrightOptimizer 
-            : nearestNeighborOptimizer;
+        TourOptimizer optimizer = switch (algorithm.toUpperCase()) {
+            case "CLARKE_WRIGHT" -> clarkeWrightOptimizer;
+            case "AI" -> aiOptimizer;
+            default -> nearestNeighborOptimizer; // Default to nearest neighbor
+        };
 
         // Optimize the tour
         return optimizer.calculateOptimalTour(deliveries);
