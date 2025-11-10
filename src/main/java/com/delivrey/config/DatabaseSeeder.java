@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
@@ -94,6 +95,9 @@ public class DatabaseSeeder implements CommandLineRunner {
         customer.setLatitude(48.8566);
         customer.setLongitude(2.3522);
         customer.setPreferredTimeSlot("09:00-18:00");
+        LocalDateTime now = LocalDateTime.now();
+        customer.setCreatedAt(now);
+        customer.setUpdatedAt(now);
         customer = customerRepository.save(customer);
 
         // Create deliveries
