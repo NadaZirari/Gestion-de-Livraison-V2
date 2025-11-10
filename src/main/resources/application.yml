@@ -48,6 +48,11 @@ spring:
     console:
       enabled: true
       path: /h2-console
+      settings:
+        web-allow-others: true
+        trace: false
+  web:
+    base-path: /api  # This ensures H2 console works with the context path
   jpa:
     show-sql: true
     hibernate:
