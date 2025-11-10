@@ -1,22 +1,19 @@
 package com.delivrey.service;
 
-import com.delivrey.entity.*;
+import com.delivrey.entity.Delivery;
+import com.delivrey.entity.Tour;
 import java.util.List;
+import java.util.Optional;
 
 public interface TourService {
-
-	
-	 List<Delivery> getOptimizedTour(Long tourId, String algorithm); 
-	    double getTotalDistance(Long tourId, String algorithm);
-	   
-	       
-
-	        // Méthodes pour le CRUD Tour
-	        Tour getTourById(Long id);
-	        List<Tour> getAllTours();
-	        Tour saveTour(Tour tour);
-	        void deleteTour(Long id);
-	    }
-
+    // CRUD Operations
+    Tour getTourById(Long id);
+    List<Tour> getAllTours();
+    Tour saveTour(Tour tour);
+    void deleteTour(Long id);
     
-
+    // Additional methods
+    Optional<Tour> findById(Long id);
+    List<Delivery> getOptimizedTour(Long tourId, String algorithm);
+    double getTotalDistance(Long tourId, String algorithm);
+}

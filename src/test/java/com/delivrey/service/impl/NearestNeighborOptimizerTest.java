@@ -1,7 +1,7 @@
 package com.delivrey.service.impl;
 
 import com.delivrey.entity.Delivery;
-import com.delivrey.service.NearestNeighborOptimizer;
+import com.delivrey.optimizer.NearestNeighborOptimizer;
 
 import org.junit.jupiter.api.Test;
 import java.util.ArrayList;

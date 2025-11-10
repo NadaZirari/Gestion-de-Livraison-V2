@@ -14,6 +14,14 @@
 
     <!-- Activation des annotations de mapping @GetMapping, @PostMapping, etc. -->
     <mvc:annotation-driven/>
+    
+    <!-- Configuration du scan des composants -->
+    <context:component-scan base-package="com.delivrey">
+        <context:exclude-filter type="regex" expression="com\.delivrey\.service\.impl\..*"/>
+    </context:component-scan>
+    
+    <!-- Activation des annotations @Configuration, @Component, @Service, @Repository, etc. -->
+    <context:annotation-config/>
 
     <!-- Configuration de la base de données H2 -->
     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
@@ -54,16 +62,15 @@
     </jpa:repositories>
 
     <!-- Définition des optimiseurs -->
-    <bean id="nearestNeighborOptimizer" class="com.delivrey.service.NearestNeighborOptimizer"/>
-    <bean id="clarkeWrightOptimizer" class="com.delivrey.service.ClarkeWrightOptimizer"/>
+    <bean id="nearestNeighborOptimizer" class="com.delivrey.optimizer.NearestNeighborOptimizer"/>
+    <bean id="clarkeWrightOptimizer" class="com.delivrey.optimizer.ClarkeWrightOptimizer"/>
 
     <!-- Définition des services -->
     <bean id="deliveryService" class="com.delivrey.service.DeliveryServiceImpl">
         <constructor-arg ref="deliveryRepository"/>
     </bean>
     
-    <bean id="tourService" class="com.delivrey.service.TourServiceImpl">
-        <constructor-arg ref="deliveryRepository"/>
+    <bean id="tourService" class="com.delivrey.service.impl.TourServiceImpl">
         <constructor-arg ref="tourRepository"/>
         <constructor-arg ref="nearestNeighborOptimizer"/>
         <constructor-arg ref="clarkeWrightOptimizer"/>

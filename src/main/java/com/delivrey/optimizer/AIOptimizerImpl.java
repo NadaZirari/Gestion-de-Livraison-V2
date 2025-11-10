@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -48,19 +47,14 @@ public class AIOptimizerImpl implements AIOptimizer {
     @Transactional
     public Tour optimizeTour(Tour tour, List<Delivery> deliveries) {
         try {
-            try {
-                String prompt = buildPrompt(tour, deliveries);
-                log.debug("Sending optimization request to AI: {}", prompt);
-                
-                // Get the response from the AI
-                String response = chatClient.call(new Prompt(prompt)).getResult().getOutput().getContent();
-                log.debug("Received AI response: {}", response);
-                
-                return parseAiResponse(tour, response);
-            } catch (Exception e) {
-                log.error("Error during AI optimization", e);
-                throw new OptimizationException("AI optimization failed: " + e.getMessage(), e);
-            }
+            String prompt = buildPrompt(tour, deliveries);
+            log.debug("Sending optimization request to AI: {}", prompt);
+            
+            // Get the response from the AI
+            String response = chatClient.call(prompt);
+            log.debug("Received AI response: {}", response);
+            
+            return parseAiResponse(tour, response);
         } catch (Exception e) {
             log.error("AI optimization failed", e);
             throw new OptimizationException("Failed to optimize tour: " + e.getMessage(), e);
@@ -73,57 +67,49 @@ public class AIOptimizerImpl implements AIOptimizer {
             StandardCharsets.UTF_8
         );
         
-        // Create a prompt template and render it with the delivery data
-        PromptTemplate promptTemplate = new PromptTemplate(template);
-        String promptText = promptTemplate.create(Map.of(
+        // Create a map of variables for the template
+        Map<String, Object> variables = Map.of(
             "input", toJson(deliveries),
             "vehicle", Map.of(
                 "maxWeight", 1000, // Example value - should come from tour or vehicle
                 "maxVolume", 10.0  // Example value - should come from tour or vehicle
             )
-        ));
+        );
         
-        return promptText;
+        // Create and process the template
+        PromptTemplate promptTemplate = new PromptTemplate(template);
+        Prompt prompt = promptTemplate.create(variables);
+        
+        // Return the rendered template as a string
+        return prompt.getContents();
     }
 
-    private Tour parseAiResponse(Tour tour, String response) throws JsonProcessingException {
+    private Tour parseAiResponse(Tour tour, String aiResponse) {
         try {
-            // Parse the AI response
-            OptimizationResponse optimization = objectMapper.readValue(
-                response, 
-                OptimizationResponse.class
-            );
-            
-            if (optimization.getOptimizedDeliveries() == null) {
-                throw new OptimizationException("AI response does not contain optimized deliveries");
+            OptimizationResponse response = objectMapper.readValue(aiResponse, OptimizationResponse.class);
+            // Update tour with optimized deliveries
+            // This is a simplified example - you'll need to implement the actual mapping
+            // based on your business logic and entity relationships
+            if (response.getOptimizedDeliveries() != null) {
+                // Update delivery order, estimated times, etc.
+                // This is just a placeholder - implement according to your needs
+                response.getOptimizedDeliveries().forEach(delivery -> {
+                    // Update delivery order and other properties
+                });
             }
-            
-            // Log the optimization results
-            log.info("Optimization completed. Total distance: {}, Vehicles used: {}", 
-                optimization.getRouteSummary() != null ? optimization.getRouteSummary().getTotalDistance() : "N/A",
-                optimization.getRouteSummary() != null ? optimization.getRouteSummary().getNumberOfVehiclesUsed() : 1
-            );
-            
-            // Log recommendations and warnings if any
-            if (optimization.getRecommendations() != null && !optimization.getRecommendations().isEmpty()) {
-                log.info("Optimization recommendations: {}", String.join(", ", optimization.getRecommendations()));
-            }
-            
-            if (optimization.getWarnings() != null && !optimization.getWarnings().isEmpty()) {
-                log.warn("Optimization warnings: {}", String.join(", ", optimization.getWarnings()));
-            }
-            
-            // Here you would typically update the tour with the optimized delivery order
-            // For now, we'll just return the tour as is
             return tour;
-            
         } catch (JsonProcessingException e) {
-            log.error("Failed to parse AI response: {}", response, e);
-            throw new OptimizationException("Failed to parse AI optimization response", e);
+            log.error("Failed to parse AI response", e);
+            throw new OptimizationException("Failed to parse AI response", e);
         }
     }
 
-    private String toJson(Object obj) throws JsonProcessingException {
-        return objectMapper.writeValueAsString(obj);
+    private String toJson(Object object) {
+        try {
+            return objectMapper.writeValueAsString(object);
+        } catch (JsonProcessingException e) {
+            log.error("Failed to convert object to JSON", e);
+            throw new OptimizationException("Failed to convert object to JSON", e);
+        }
     }
 }

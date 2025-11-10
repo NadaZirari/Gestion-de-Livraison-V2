@@ -1,57 +1,61 @@
-package com.delivrey.service.impl;
+package com.delivrey.optimizer;
 
 import com.delivrey.entity.Delivery;
-import com.delivrey.service.TourOptimizer;
+import org.springframework.stereotype.Component;
+
 import java.util.*;
 
+@Component
 public class NearestNeighborOptimizer implements TourOptimizer {
-
+    
     @Override
     public List<Delivery> calculateOptimalTour(List<Delivery> deliveries) {
-        if (deliveries == null || deliveries.isEmpty()) {
-            return new ArrayList<>();
+        if (deliveries == null || deliveries.isEmpty() || deliveries.size() == 1) {
+            return deliveries;
         }
 
         List<Delivery> optimizedRoute = new ArrayList<>();
-        List<Delivery> remainingDeliveries = new ArrayList<>(deliveries);
+        Set<Delivery> unvisited = new HashSet<>(deliveries);
         
-        // Démarrer avec le premier point de livraison
-        Delivery current = remainingDeliveries.remove(0);
+        // Start with the first delivery
+        Delivery current = deliveries.get(0);
         optimizedRoute.add(current);
+        unvisited.remove(current);
 
-        // Tant qu'il reste des livraisons à traiter
-        while (!remainingDeliveries.isEmpty()) {
-            Delivery nearest = findNearest(current, remainingDeliveries);
+        // Find nearest neighbor until all deliveries are visited
+        while (!unvisited.isEmpty()) {
+            Delivery nearest = findNearestNeighbor(current, unvisited);
             optimizedRoute.add(nearest);
-            remainingDeliveries.remove(nearest);
+            unvisited.remove(nearest);
             current = nearest;
         }
 
         return optimizedRoute;
     }
 
-    private Delivery findNearest(Delivery current, List<Delivery> deliveries) {
+    private Delivery findNearestNeighbor(Delivery current, Set<Delivery> candidates) {
         Delivery nearest = null;
         double minDistance = Double.MAX_VALUE;
-        
-        for (Delivery delivery : deliveries) {
+
+        for (Delivery candidate : candidates) {
             double distance = calculateDistance(
-                current.getLatitude(), current.getLongitude(),
-                delivery.getLatitude(), delivery.getLongitude()
+                current.getLatitude(), 
+                current.getLongitude(),
+                candidate.getLatitude(),
+                candidate.getLongitude()
             );
             
             if (distance < minDistance) {
                 minDistance = distance;
-                nearest = delivery;
+                nearest = candidate;
             }
         }
-        
+
         return nearest;
     }
 
-    // Méthode utilitaire pour calculer la distance entre deux points géographiques (formule de Haversine)
     private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
-        final int R = 6371; // Rayon de la Terre en kilomètres
+        final int R = 6371; // Earth's radius in kilometers
         
         double latDistance = Math.toRadians(lat2 - lat1);
         double lonDistance = Math.toRadians(lon2 - lon1);
@@ -61,7 +65,6 @@ public class NearestNeighborOptimizer implements TourOptimizer {
                 * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
                 
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        
-        return R * c; // Distance en kilomètres
+        return R * c;
     }
 }

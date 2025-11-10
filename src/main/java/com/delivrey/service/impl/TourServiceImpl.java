@@ -2,28 +2,50 @@ package com.delivrey.service.impl;
 
 import com.delivrey.entity.Delivery;
 import com.delivrey.entity.Tour;
-import java.util.ArrayList;
-import com.delivrey.repository.DeliveryRepository;
+import com.delivrey.optimizer.TourOptimizer;
 import com.delivrey.repository.TourRepository;
-import com.delivrey.service.TourOptimizer;
 import com.delivrey.service.TourService;
-import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+@Service
+@Transactional
+@RequiredArgsConstructor
 public class TourServiceImpl implements TourService {
 
-    private final DeliveryRepository deliveryRepository;
     private final TourRepository tourRepository;
     private final TourOptimizer nearestNeighborOptimizer;
     private final TourOptimizer clarkeWrightOptimizer;
 
-    public TourServiceImpl(DeliveryRepository deliveryRepository,
-                         TourRepository tourRepository, 
-                         TourOptimizer nearestNeighborOptimizer, 
-                         TourOptimizer clarkeWrightOptimizer) {
-        this.deliveryRepository = deliveryRepository;
-        this.tourRepository = tourRepository;
-        this.nearestNeighborOptimizer = nearestNeighborOptimizer;
-        this.clarkeWrightOptimizer = clarkeWrightOptimizer;
+    @Override
+    public Tour getTourById(Long id) {
+        return tourRepository.findByIdWithDeliveriesAndWarehouse(id)
+                .orElseThrow(() -> new RuntimeException("Tour not found with id: " + id));
+    }
+
+    @Override
+    public List<Tour> getAllTours() {
+        return tourRepository.findAllWithDeliveries();
+    }
+
+    @Override
+    public Tour saveTour(Tour tour) {
+        return tourRepository.save(tour);
+    }
+
+    @Override
+    public void deleteTour(Long id) {
+        tourRepository.deleteById(id);
+    }
+
+    @Override
+    public Optional<Tour> findById(Long id) {
+        return tourRepository.findByIdWithDeliveries(id);
     }
 
     @Override
@@ -74,30 +96,9 @@ public class TourServiceImpl implements TourService {
         return totalDistance;
     }
 
-    @Override
-    public Tour getTourById(Long id) {
-        return tourRepository.findByIdWithDeliveries(id)
-            .orElseThrow(() -> new RuntimeException("Tour not found with id: " + id));
-    }
-
-    @Override
-    public List<Tour> getAllTours() {
-        return tourRepository.findAllWithDeliveries();
-    }
-
-    @Override
-    public Tour saveTour(Tour tour) {
-        return tourRepository.save(tour);
-    }
-
-    @Override
-    public void deleteTour(Long id) {
-        tourRepository.deleteById(id);
-    }
-
-    // Méthode utilitaire pour calculer la distance entre deux points géographiques
+    // Utility method to calculate distance between two geographical points
     private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
-        final int R = 6371; // Rayon de la Terre en kilomètres
+        final int R = 6371; // Earth's radius in kilometers
         
         double latDistance = Math.toRadians(lat2 - lat1);
         double lonDistance = Math.toRadians(lon2 - lon1);
@@ -108,6 +109,6 @@ public class TourServiceImpl implements TourService {
                 
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         
-        return R * c; // Distance en kilomètres
+        return R * c; // Distance in kilometers
     }
 }
