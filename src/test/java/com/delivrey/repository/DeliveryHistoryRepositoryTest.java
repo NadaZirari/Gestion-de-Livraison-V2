@@ -57,7 +57,7 @@ public class DeliveryHistoryRepositoryTest {
         testHistory.setPlannedTime(LocalTime.of(14, 0));
         testHistory.setActualTime(LocalTime.of(14, 15));
         testHistory.setDelayMinutes(15);
-        testHistory.setDayOfWeek("Monday");
+        testHistory.setDayOfWeek(java.time.DayOfWeek.MONDAY);
         entityManager.persist(testHistory);
         
         entityManager.flush();

@@ -3,6 +3,14 @@ server:
   servlet:
     context-path: /api
 
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+  show-actuator: true
+
 spring:
   config:
     activate:
@@ -30,6 +38,9 @@ logging:
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
     org.springframework.web: DEBUG
     com.delivrey: DEBUG
+    org.springdoc: DEBUG
+    org.springdoc.api.OpenApiResource: TRACE
+    org.springdoc.webmvc.api.OpenApiResource: TRACE
   application:
     name: delivery-service
 

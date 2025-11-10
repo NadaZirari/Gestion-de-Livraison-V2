@@ -1,13 +1,10 @@
 package mapper;
 
 import com.delivrey.dto.TourDTO;
-import com.delivrey.dto.DeliveryDTO;
 import com.delivrey.entity.Tour;
 import com.delivrey.entity.TourStatus;
 import org.hibernate.Hibernate;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.stream.Collectors;
 
 public class TourMapper {
@@ -20,7 +17,7 @@ public class TourMapper {
         dto.setDate(tour.getTourDate());
         dto.setVehicleId(tour.getVehicle() != null ? tour.getVehicle().getId() : null);
         dto.setWarehouseId(tour.getWarehouse() != null ? tour.getWarehouse().getId() : null);
-        dto.setStatus(tour.getTourStatus() != null ? tour.getTourStatus().name() : null);
+        dto.setStatus(tour.getTourStatus());
         dto.setAlgorithmUsed(tour.getAlgorithmUsed());
         
         // Safely handle lazy-loaded collections
@@ -46,7 +43,7 @@ public class TourMapper {
         
         if (dto.getStatus() != null) {
             try {
-                tour.setTourStatus(TourStatus.valueOf(dto.getStatus()));
+                tour.setTourStatus(dto.getStatus());
             } catch (IllegalArgumentException e) {
                 // Handle invalid status value
                 tour.setTourStatus(TourStatus.PLANNED);
@@ -66,7 +63,7 @@ public class TourMapper {
         
         if (dto.getStatus() != null) {
             try {
-                tour.setTourStatus(TourStatus.valueOf(dto.getStatus()));
+                tour.setTourStatus(dto.getStatus());
             } catch (IllegalArgumentException e) {
                 // Handle invalid status value
             }
