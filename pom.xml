@@ -31,6 +31,7 @@
 		<spring-ai.version>0.8.1</spring-ai.version>
 		<lombok.version>1.18.30</lombok.version>
 		<liquibase.version>4.25.1</liquibase.version>
+		<spring-boot.version>3.2.0</spring-boot.version>
 	</properties>
 
 	<repositories>
@@ -54,17 +55,6 @@
 			</snapshots>
 		</pluginRepository>
 	</pluginRepositories>
-
-	<repositories>
-		<repository>
-			<id>spring-milestones</id>
-			<name>Spring Milestones</name>
-			<url>https://repo.spring.io/milestone</url>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
 	<dependencies>
 		<!-- Spring Boot Starters -->
 		<dependency>
@@ -88,19 +78,19 @@
 		<dependency>
 			<groupId>org.springframework.ai</groupId>
 			<artifactId>spring-ai-core</artifactId>
+			<version>${spring-ai.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.ai</groupId>
 			<artifactId>spring-ai-chat</artifactId>
+			<version>${spring-ai.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.ai</groupId>
+			<artifactId>spring-ai-ollama</artifactId>
+			<version>${spring-ai.version}</version>
 		</dependency>
 
-		<!-- Lombok -->
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<version>${lombok.version}</version>
-			<scope>provided</scope>
-		</dependency>
 
 		<!-- Database -->
 		<dependency>
@@ -134,9 +124,12 @@
 			<scope>runtime</scope>
 			<optional>true</optional>
 		</dependency>
+		<!-- Lombok -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
+			<version>${lombok.version}</version>
+			<scope>provided</scope>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
@@ -144,10 +137,12 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		
+		<!-- H2 Database -->
 		<dependency>
-			<groupId>org.springframework.ai</groupId>
-			<artifactId>spring-ai-ollama</artifactId>
-			<version>${spring-ai.version}</version>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.testcontainers</groupId>
