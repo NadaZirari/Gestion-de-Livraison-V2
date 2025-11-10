@@ -28,16 +28,16 @@ public class Delivery {
     @Column(nullable = false)
     private String address;
     
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "DECIMAL(10,8)")
     private Double latitude;
     
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "DECIMAL(11,8)")
     private Double longitude;
     
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "DECIMAL(10,2)")
     private Double weight;
     
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "DECIMAL(10,3)")
     private Double volume;
     
     @Column(name = "time_window", nullable = false)

@@ -25,10 +25,10 @@ public class Customer {
     @Column(nullable = false)
     private String address;
     
-    @Column(nullable = false, precision = 10, scale = 8)
+    @Column(nullable = false, columnDefinition = "DECIMAL(10,8)")
     private Double latitude;
     
-    @Column(nullable = false, precision = 11, scale = 8)
+    @Column(nullable = false, columnDefinition = "DECIMAL(11,8)")
     private Double longitude;
     
     @Column(name = "preferred_time_slot")
