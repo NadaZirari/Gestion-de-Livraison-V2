@@ -4,9 +4,11 @@ import com.delivrey.dto.DeliveryDTO;
 import com.delivrey.dto.TourDTO;
 import com.delivrey.entity.Delivery;
 import com.delivrey.entity.Tour;
+import com.delivrey.entity.TourStatus;
 import com.delivrey.service.TourService;
 import mapper.DeliveryMapper;
 import mapper.TourMapper;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,6 +48,18 @@ public class TourController {
     public TourDTO getTourById(@PathVariable Long tourId) {
         Tour tour = tourService.getTourById(tourId); // méthode dans TourService
         return TourMapper.toDto(tour);               // conversion Tour -> TourDTO
+    }
+    
+    /**
+     * Mark a tour as completed
+     * @param tourId The ID of the tour to complete
+     * @return The updated tour DTO
+     */
+    @PutMapping("/{tourId}/complete")
+    @Transactional
+    public ResponseEntity<TourDTO> completeTour(@PathVariable Long tourId) {
+        TourDTO updatedTour = tourService.updateTourStatus(tourId, TourStatus.COMPLETED);
+        return ResponseEntity.ok(updatedTour);
     }
 
     // --- Endpoint pour tous les tours ---

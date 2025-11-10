@@ -1,9 +1,10 @@
 package com.delivrey.dto;
 
+import com.delivrey.entity.TourStatus;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.time.LocalDate;
 import java.util.List;
-
-import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(name = "Tour", description = "Représentation d'un tour de livraison")
 public class TourDTO {
@@ -15,10 +16,10 @@ public class TourDTO {
     private LocalDate date;
 
     @Schema(description = "Statut du tour (ex : PLANNED, IN_PROGRESS, COMPLETED)")
-    private String status;
+    private TourStatus status;
 
-    @Schema(description = "Liste des livraisons associées au tour")
-    private List<DeliveryDTO> deliveries;
+    @Schema(description = "Liste des identifiants des livraisons associées au tour")
+    private List<Long> deliveryIds;
 
     @Schema(description = "Identifiant du véhicule assigné au tour")
     private Long vehicleId;
@@ -34,6 +35,9 @@ public class TourDTO {
 
     @Schema(description = "Distance totale du tour")
     private double totalDistance;
+    
+    @Schema(description = "Algorithme utilisé pour l'optimisation")
+    private String algorithmUsed;
 
     public TourDTO() {}
 
@@ -44,11 +48,13 @@ public class TourDTO {
     public LocalDate getDate() { return date; }
     public void setDate(LocalDate date) { this.date = date; }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public TourStatus getStatus() { return status; }
+    public void setStatus(TourStatus status) { this.status = status; }
 
-    public List<DeliveryDTO> getDeliveries() { return deliveries; }
-    public void setDeliveries(List<DeliveryDTO> deliveries) { this.deliveries = deliveries; }
+    public List<Long> getDeliveryIds() { return deliveryIds; }
+    public void setDeliveryIds(List<Long> deliveryIds) { this.deliveryIds = deliveryIds; }
+    public String getAlgorithmUsed() { return algorithmUsed; }
+    public void setAlgorithmUsed(String algorithmUsed) { this.algorithmUsed = algorithmUsed; }
 
     public Long getVehicleId() { return vehicleId; }
     public void setVehicleId(Long vehicleId) { this.vehicleId = vehicleId; }

@@ -33,6 +33,14 @@ logging:
   application:
     name: delivery-service
 
+task:
+  execution:
+    thread-name-prefix: DeliveryTask-
+    pool:
+      core-size: 2
+      max-size: 10
+      queue-capacity: 500
+
 ---
 # Development profile (H2)
 spring:

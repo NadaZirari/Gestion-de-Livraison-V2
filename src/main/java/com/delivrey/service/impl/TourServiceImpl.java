@@ -1,15 +1,20 @@
 package com.delivrey.service.impl;
 
+import com.delivrey.dto.TourDTO;
 import com.delivrey.entity.Delivery;
 import com.delivrey.entity.Tour;
+import com.delivrey.entity.TourStatus;
+import com.delivrey.event.TourStatusChangeEvent;
+import com.delivrey.exception.EntityNotFoundException;
+import com.delivrey.mapper.TourMapper;
 import com.delivrey.optimizer.TourOptimizer;
 import com.delivrey.repository.TourRepository;
 import com.delivrey.service.TourService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,6 +26,8 @@ public class TourServiceImpl implements TourService {
     private final TourRepository tourRepository;
     private final TourOptimizer nearestNeighborOptimizer;
     private final TourOptimizer clarkeWrightOptimizer;
+    private final ApplicationEventPublisher eventPublisher;
+    private final TourMapper tourMapper;
 
     @Override
     public Tour getTourById(Long id) {
@@ -41,6 +48,25 @@ public class TourServiceImpl implements TourService {
     @Override
     public void deleteTour(Long id) {
         tourRepository.deleteById(id);
+    }
+    
+    @Override
+    @Transactional
+    public TourDTO updateTourStatus(Long id, TourStatus newStatus) {
+        return tourRepository.findByIdWithDeliveries(id)
+                .map(tour -> {
+                    TourStatus oldStatus = tour.getTourStatus();
+                    if (oldStatus != newStatus) {
+                        tour.setTourStatus(newStatus);
+                        Tour updatedTour = tourRepository.save(tour);
+                        
+                        // Publish the status change event
+                        eventPublisher.publishEvent(new TourStatusChangeEvent(this, updatedTour, oldStatus, newStatus));
+                        return tourMapper.toDto(updatedTour);
+                    }
+                    return tourMapper.toDto(tour);
+                })
+                .orElseThrow(() -> new EntityNotFoundException("Tour not found with id: " + id));
     }
 
     @Override
