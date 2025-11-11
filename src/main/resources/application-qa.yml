@@ -1,0 +1,56 @@
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/delivery_qa}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  liquibase:
+    enabled: true
+    default-schema: public
+
+# Configuration pour l'environnement de test
+logging:
+  level:
+    root: INFO
+    org.hibernate.SQL: DEBUG
+    org.springframework.web: INFO
+    com.delivrey: INFO
+
+# Configuration de l'optimiseur pour QA
+optimizer:
+  type: ai  # Utilisation de l'optimiseur IA en QA
+
+# Configuration Spring AI pour QA
+spring:
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY:}
+      base-url: https://api.openai.com/v1/
+      chat:
+        model: gpt-3.5-turbo
+        temperature: 0.5  # Plus déterministe pour les tests
+
+# Configuration du pool de connexions
+spring:
+  datasource:
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      idle-timeout: 30000
+      max-lifetime: 1200000
+      connection-timeout: 30000
+
+# Configuration du cache (optionnel)
+spring:
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=500,expireAfterWrite=300s

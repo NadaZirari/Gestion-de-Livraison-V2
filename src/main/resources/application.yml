@@ -3,61 +3,77 @@ server:
   servlet:
     context-path: /api
 
+# Configuration SpringDoc (OpenAPI)
 springdoc:
   api-docs:
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
     operationsSorter: method
+    tagsSorter: alpha
   show-actuator: true
+  api-docs.enabled: true
+  swagger-ui.enabled: true
 
+# Configuration Spring principale
 spring:
-  config:
-    activate:
-      on-profile: default
-  main:
-    allow-bean-definition-overriding: true
-    web-application-type: servlet
-  autoconfigure:
-    exclude: org.springframework.cloud.function.context.config.ContextFunctionCatalogAutoConfiguration
+  application:
+    name: delivery-service
+  
+  # Configuration de Liquibase
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.xml
+    
+  # Configuration JPA commune
   jpa:
-    show-sql: true
+    open-in-view: false
     properties:
       hibernate:
-        format_sql: true
-  ai:
-    openai:
-      api-key: sk-dummy-key
+        jdbc:
+          lob:
+            non_contextual_creation: true
+  
+  # Configuration des messages
+  messages:
+    basename: i18n/messages
+    encoding: UTF-8
 
+# Configuration des logs (peut être surchargée par les profils)
 logging:
   level:
     root: INFO
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-    org.springframework.web: DEBUG
-    com.delivrey: DEBUG
-    org.springdoc: DEBUG
-    org.springdoc.api.OpenApiResource: TRACE
-    org.springdoc.webmvc.api.OpenApiResource: TRACE
-  application:
-    name: delivery-service
+    org.springframework: INFO
+    com.delivrey: INFO
+  file:
+    name: ${LOG_FILE:logs/application.log}
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
 
+# Configuration des tâches asynchrones
 task:
   execution:
     thread-name-prefix: DeliveryTask-
     pool:
-      core-size: 2
+      core-size: 4
       max-size: 10
-      queue-capacity: 500
+      queue-capacity: 100
+      keep-alive: 60s
+  scheduling:
+    pool:
+      size: 5
+    shutdown:
+      await-termination: true
+      await-termination-period: 30s
 
----
-# Development profile (H2)
+# Configuration du cache
 spring:
-  config:
-    activate:
-      on-profile: dev
+  cache:
+    type: simple
+    cache-names:
+      - customers
+      - deliveries
+      - tours
   datasource:
     url: jdbc:h2:mem:deliverydb
     driver-class-name: org.h2.Driver
