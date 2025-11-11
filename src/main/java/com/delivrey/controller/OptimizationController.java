@@ -17,10 +17,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.lang.NonNull;
 
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import org.springframework.data.domain.Pageable;
 
 @Slf4j
 @RestController
@@ -47,7 +49,7 @@ public class OptimizationController {
     @PostMapping("/tour/{tourId}")
     public ResponseEntity<?> optimizeTour(
         @Parameter(description = "ID of the tour to optimize", required = true) 
-        @PathVariable Long tourId,
+        @PathVariable @NonNull Long tourId,
         
         @Parameter(description = "Maximum duration in minutes")
         @RequestParam(required = false) Integer maxDuration,
@@ -61,8 +63,9 @@ public class OptimizationController {
         try {
             log.info("Optimization request received for tour: {}", tourId);
             
-            // Récupérer l'historique des livraisons pour ce tour
-            List<DeliveryHistory> history = deliveryHistoryService.findByTourId(tourId);
+            // Récupérer l'historique des livraisons pour ce tour avec pagination
+            Pageable pageable = Pageable.unpaged(); // Récupérer tous les résultats sans pagination
+            List<DeliveryHistory> history = deliveryHistoryService.findByTourId(tourId, pageable).getContent();
             
             // Préparer les contraintes d'optimisation
             OptimizationConstraints constraints = OptimizationConstraints.builder()

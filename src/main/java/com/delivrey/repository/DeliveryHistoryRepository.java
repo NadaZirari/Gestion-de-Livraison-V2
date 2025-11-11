@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -17,16 +18,24 @@ import java.util.Optional;
 public interface DeliveryHistoryRepository extends JpaRepository<DeliveryHistory, Long> {
     
     // Paginated queries
-    Page<DeliveryHistory> findAll(Pageable pageable);
+    @NonNull
+    Page<DeliveryHistory> findAll(@NonNull Pageable pageable);
     
     // Find all delivery histories for a specific customer with pagination
-    Page<DeliveryHistory> findByCustomerId(Long customerId, Pageable pageable);
+    @NonNull
+    Page<DeliveryHistory> findByCustomerId(@NonNull Long customerId, @NonNull Pageable pageable);
     
     // Find all delivery histories for a specific tour with pagination
-    Page<DeliveryHistory> findByTourId(Long tourId, Pageable pageable);
+    @NonNull
+    Page<DeliveryHistory> findByTourId(@NonNull Long tourId, @NonNull Pageable pageable);
     
     // Find delivery histories within a date range with pagination
-    Page<DeliveryHistory> findByDeliveryDateBetween(LocalDate startDate, LocalDate endDate, Pageable pageable);
+    @NonNull
+    Page<DeliveryHistory> findByDeliveryDateBetween(
+        @NonNull LocalDate startDate, 
+        @NonNull LocalDate endDate, 
+        @NonNull Pageable pageable
+    );
     
     // Find delayed deliveries (delay > 0) with pagination
     @Query("SELECT dh FROM DeliveryHistory dh WHERE dh.delayMinutes > 0")
@@ -38,31 +47,34 @@ public interface DeliveryHistoryRepository extends JpaRepository<DeliveryHistory
     
     // Statistics methods
     @Query("SELECT COUNT(dh) FROM DeliveryHistory dh WHERE dh.customer.id = :customerId")
-    long countByCustomerId(@Param("customerId") Long customerId);
+    long countByCustomerId(@Param("customerId") @NonNull Long customerId);
     
     @Query("SELECT COUNT(dh) FROM DeliveryHistory dh WHERE dh.customer.id = :customerId AND dh.delayMinutes <= :maxDelay")
     long countByCustomerIdAndDelayMinutesLessThanEqual(
-        @Param("customerId") Long customerId, 
+        @Param("customerId") @NonNull Long customerId, 
         @Param("maxDelay") int maxDelay
     );
     
     @Query("SELECT AVG(dh.delayMinutes) FROM DeliveryHistory dh WHERE dh.customer.id = :customerId")
-    Optional<Double> findAverageDelayByCustomerId(@Param("customerId") Long customerId);
+    @NonNull
+    Optional<Double> findAverageDelayByCustomerId(@Param("customerId") @NonNull Long customerId);
     
     @Query("SELECT COUNT(dh) FROM DeliveryHistory dh WHERE dh.tour.id = :tourId")
-    long countByTourId(@Param("tourId") Long tourId);
+    long countByTourId(@Param("tourId") @NonNull Long tourId);
     
     @Query("SELECT COUNT(dh) FROM DeliveryHistory dh WHERE dh.tour.id = :tourId AND dh.delayMinutes <= :maxDelay")
     long countByTourIdAndDelayMinutesLessThanEqual(
-        @Param("tourId") Long tourId, 
+        @Param("tourId") @NonNull Long tourId, 
         @Param("maxDelay") int maxDelay
     );
     
     @Query("SELECT AVG(dh.delayMinutes) FROM DeliveryHistory dh WHERE dh.tour.id = :tourId")
-    Optional<Double> findAverageDelayByTourId(@Param("tourId") Long tourId);
+    @NonNull
+    Optional<Double> findAverageDelayByTourId(@Param("tourId") @NonNull Long tourId);
     
     @Query("SELECT COALESCE(SUM(dh.delayMinutes), 0) FROM DeliveryHistory dh WHERE dh.tour.id = :tourId")
-    Optional<Long> findTotalDelayByTourId(@Param("tourId") Long tourId);
+    @NonNull
+    Optional<Long> findTotalDelayByTourId(@Param("tourId") @NonNull Long tourId);
     
     // Existing methods for backward compatibility
     List<DeliveryHistory> findByCustomerId(Long customerId);

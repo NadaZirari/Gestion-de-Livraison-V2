@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -20,7 +21,7 @@ public class DeliveryHistoryController {
 
     private final DeliveryHistoryService deliveryHistoryService;
 
-    public DeliveryHistoryController(DeliveryHistoryService deliveryHistoryService) {
+    public DeliveryHistoryController(@NonNull DeliveryHistoryService deliveryHistoryService) {
         this.deliveryHistoryService = deliveryHistoryService;
     }
 
@@ -31,7 +32,7 @@ public class DeliveryHistoryController {
             @RequestParam(required = false) Long tourId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
-            @PageableDefault(size = 20) Pageable pageable) {
+            @PageableDefault(size = 20) @NonNull Pageable pageable) {
         
         if (customerId != null) {
             return ResponseEntity.ok(deliveryHistoryService.findByCustomerId(customerId, pageable));
@@ -46,7 +47,7 @@ public class DeliveryHistoryController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Récupère un historique de livraison par son ID")
-    public ResponseEntity<DeliveryHistory> getDeliveryHistoryById(@PathVariable Long id) {
+    public ResponseEntity<DeliveryHistory> getDeliveryHistoryById(@PathVariable @NonNull Long id) {
         return deliveryHistoryService.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -54,13 +55,13 @@ public class DeliveryHistoryController {
 
     @GetMapping("/customer/{customerId}/stats")
     @Operation(summary = "Récupère les statistiques de livraison pour un client")
-    public ResponseEntity<?> getCustomerDeliveryStats(@PathVariable Long customerId) {
+    public ResponseEntity<?> getCustomerDeliveryStats(@PathVariable @NonNull Long customerId) {
         return ResponseEntity.ok(deliveryHistoryService.getCustomerDeliveryStats(customerId));
     }
 
     @GetMapping("/tour/{tourId}/stats")
     @Operation(summary = "Récupère les statistiques de livraison pour un tour")
-    public ResponseEntity<?> getTourDeliveryStats(@PathVariable Long tourId) {
+    public ResponseEntity<?> getTourDeliveryStats(@PathVariable @NonNull Long tourId) {
         return ResponseEntity.ok(deliveryHistoryService.getTourDeliveryStats(tourId));
     }
 }

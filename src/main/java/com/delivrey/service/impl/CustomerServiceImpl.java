@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,28 +23,36 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<Customer> findAll(Pageable pageable) {
+    @NonNull
+    public Page<Customer> findAll(@NonNull Pageable pageable) {
         log.debug("Fetching all customers with pagination: {}", pageable);
         return customerRepository.findAll(pageable);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<Customer> findById(Long id) {
+    @NonNull
+    public Optional<Customer> findById(@NonNull Long id) {
         log.debug("Fetching customer with id: {}", id);
         return customerRepository.findById(id);
     }
 
     @Override
     @Transactional
-    public Customer save(Customer customer) {
+    @NonNull
+    public Customer save(@NonNull Customer customer) {
         log.debug("Saving new customer: {}", customer);
-        return customerRepository.save(customer);
+        Customer savedCustomer = customerRepository.save(customer);
+        if (savedCustomer == null) {
+            throw new IllegalStateException("Failed to save customer: returned null");
+        }
+        return savedCustomer;
     }
 
     @Override
     @Transactional
-    public Customer update(Long id, Customer customerDetails) {
+    @NonNull
+    public Customer update(@NonNull Long id, @NonNull Customer customerDetails) {
         log.debug("Updating customer with id {}: {}", id, customerDetails);
         return customerRepository.findById(id)
                 .map(existingCustomer -> {
@@ -59,7 +68,7 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     @Transactional
-    public void deleteById(Long id) {
+    public void deleteById(@NonNull Long id) {
         log.debug("Deleting customer with id: {}", id);
         if (!customerRepository.existsById(id)) {
             throw new NotFoundException("Customer not found with id: " + id);
@@ -69,7 +78,8 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<Customer> search(String name, String address, Pageable pageable) {
+    @NonNull
+    public Page<Customer> search(String name, String address, @NonNull Pageable pageable) {
         log.debug("Searching customers with name: {}, address: {}", name, address);
         if (name != null && address != null) {
             return customerRepository.findByNameContainingIgnoreCaseAndAddressContainingIgnoreCase(name, address, pageable);
