@@ -9,5 +9,6 @@
     <include file="db/changelog/db.changelog-v1.0-initial.xml" relativeToChangelogFile="false"/>
     <include file="db/changelog/db.changelog-v2.0-new-entities.xml" relativeToChangelogFile="false"/>
     <include file="db/changelog/db.changelog-v3.0-delivery-history.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/db.changelog-v4.0-data-and-optimizations.xml" relativeToChangelogFile="false"/>
     
 </databaseChangeLog>

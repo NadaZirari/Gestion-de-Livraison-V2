@@ -1,0 +1,117 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog 
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+
+    <changeSet id="v4.0-add-indexes" author="dev">
+        <comment>Add performance indexes for common queries</comment>
+        
+        <!-- Index for customer location-based queries -->
+        <createIndex tableName="customer" indexName="idx_customer_location">
+            <column name="latitude"/>
+            <column name="longitude"/>
+        </createIndex>
+        
+        <!-- Index for delivery status queries -->
+        <createIndex tableName="delivery" indexName="idx_delivery_status">
+            <column name="delivery_status"/>
+        </createIndex>
+        
+        <!-- Index for tour status queries -->
+        <createIndex tableName="tour" indexName="idx_tour_status">
+            <column name="tour_status"/>
+        </createIndex>
+        
+        <!-- Index for delivery history lookups -->
+        <createIndex tableName="delivery_history" indexName="idx_delivery_history_dates">
+            <column name="delivery_date"/>
+            <column name="day_of_week"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="v4.1-add-sample-data" author="dev">
+        <comment>Add sample data for development environment</comment>
+        
+        <!-- Sample Customers -->
+        <insert tableName="customer">
+            <column name="name" value="Acme Corp"/>
+            <column name="address" value="123 Main St, Casablanca"/>
+            <column name="latitude" value="33.5731"/>
+            <column name="longitude" value="-7.5898"/>
+            <column name="preferred_time_slot" value="09:00-12:00"/>
+        </insert>
+        
+        <insert tableName="customer">
+            <column name="name" value="Beta Industries"/>
+            <column name="address" value="456 Market St, Rabat"/>
+            <column name="latitude" value="34.0209"/>
+            <column name="longitude" value="-6.8416"/>
+            <column name="preferred_time_slot" value="13:00-17:00"/>
+        </insert>
+        
+        <!-- Sample Tours -->
+        <insert tableName="tour">
+            <column name="tour_status" value="PLANNED"/>
+            <column name="start_time" valueDate="CURRENT_TIMESTAMP"/>
+            <column name="end_time" valueDate="CURRENT_TIMESTAMP"/>
+        </insert>
+        
+        <!-- Sample Deliveries -->
+        <insert tableName="delivery">
+            <column name="delivery_status" value="PENDING"/>
+            <column name="delivery_address" value="123 Main St, Casablanca"/>
+            <column name="customer_id" valueNumeric="1"/>
+        </insert>
+        
+        <insert tableName="delivery">
+            <column name="delivery_status" value="PENDING"/>
+            <column name="delivery_address" value="456 Market St, Rabat"/>
+            <column name="customer_id" valueNumeric="2"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="v4.2-add-constraints" author="dev">
+        <comment>Add additional constraints for data integrity</comment>
+        
+        <!-- Ensure preferred_time_slot follows HH:MM-HH:MM format -->
+        <sql>
+            ALTER TABLE customer 
+            ADD CONSTRAINT chk_preferred_time_slot_format 
+            CHECK (preferred_time_slot IS NULL OR preferred_time_slot ~ '^([01]?[0-9]|2[0-3]):[0-5][0-9]-([01]?[0-9]|2[0-3]):[0-5][0-9]$');
+        </sql>
+        
+        <!-- Ensure valid latitude/longitude ranges -->
+        <sql>
+            ALTER TABLE customer
+            ADD CONSTRAINT chk_valid_latitude CHECK (latitude BETWEEN -90 AND 90);
+            
+            ALTER TABLE customer
+            ADD CONSTRAINT chk_valid_longitude CHECK (longitude BETWEEN -180 AND 180);
+        </sql>
+    </changeSet>
+    
+    <changeSet id="v4.3-add-spatial-extension" author="dev" dbms="postgresql">
+        <comment>Add PostGIS extension for spatial queries</comment>
+        <sql>
+            CREATE EXTENSION IF NOT EXISTS postgis;
+            
+            -- Add a geography column for spatial queries
+            ALTER TABLE customer ADD COLUMN IF NOT EXISTS location GEOGRAPHY(POINT, 4326);
+            
+            -- Update the location column with existing coordinates
+            UPDATE customer 
+            SET location = ST_SetSRID(ST_MakePoint(longitude, latitude), 4326);
+            
+            -- Create a spatial index
+            CREATE INDEX idx_customer_location_geo ON customer USING GIST (location);
+        </sql>
+        <rollback>
+            DROP INDEX IF EXISTS idx_customer_location_geo;
+            ALTER TABLE customer DROP COLUMN IF EXISTS location;
+            DROP EXTENSION IF EXISTS postgis;
+        </rollback>
+    </changeSet>
+    
+</databaseChangeLog>

@@ -4,13 +4,18 @@ import com.delivrey.entity.Delivery;
 import com.delivrey.entity.DeliveryHistory;
 import com.delivrey.entity.Tour;
 import com.delivrey.entity.TourStatus;
+import com.delivrey.exception.NotFoundException;
 import com.delivrey.repository.DeliveryHistoryRepository;
+import com.delivrey.repository.TourRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalTime;
+import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class DeliveryHistoryService {
@@ -35,6 +40,25 @@ public class DeliveryHistoryService {
         }
     }
     
+/**
+     * Récupère l'historique des livraisons pour un tour spécifique
+     * @param tourId L'identifiant du tour
+     * @return La liste des historiques de livraison pour le tour
+     * @throws NotFoundException Si le tour n'est pas trouvé
+     */
+    @Transactional(readOnly = true)
+    public List<DeliveryHistory> findByTourId(Long tourId) {
+        log.debug("Recherche de l'historique des livraisons pour le tour ID: {}", tourId);
+        List<DeliveryHistory> history = deliveryHistoryRepository.findByTourId(tourId);
+        
+        if (history.isEmpty()) {
+            log.warn("Aucun historique trouvé pour le tour ID: {}", tourId);
+            throw new NotFoundException("Aucun historique trouvé pour le tour ID: " + tourId);
+        }
+        
+        return history;
+    }
+    
     private LocalTime extractPlannedTime(Delivery delivery) {
         try {
             if (delivery.getCustomer() != null && delivery.getCustomer().getPreferredTimeSlot() != null) {
@@ -44,8 +68,8 @@ public class DeliveryHistoryService {
                 }
             }
         } catch (Exception e) {
-            // Fall through to default
+            log.warn("Erreur lors de l'extraction de l'heure planifiée pour la livraison: {}", delivery.getId(), e);
         }
-        return LocalTime.NOON; // Default time if not specified
+        return LocalTime.NOON; // Heure par défaut si non spécifiée
     }
 }
