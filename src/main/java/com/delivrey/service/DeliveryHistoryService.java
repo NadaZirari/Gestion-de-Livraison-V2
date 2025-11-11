@@ -6,14 +6,18 @@ import com.delivrey.entity.Tour;
 import com.delivrey.entity.TourStatus;
 import com.delivrey.exception.NotFoundException;
 import com.delivrey.repository.DeliveryHistoryRepository;
-import com.delivrey.repository.TourRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -39,24 +43,56 @@ public class DeliveryHistoryService {
             });
         }
     }
-    
-/**
-     * Récupère l'historique des livraisons pour un tour spécifique
-     * @param tourId L'identifiant du tour
-     * @return La liste des historiques de livraison pour le tour
-     * @throws NotFoundException Si le tour n'est pas trouvé
-     */
+
     @Transactional(readOnly = true)
-    public List<DeliveryHistory> findByTourId(Long tourId) {
-        log.debug("Recherche de l'historique des livraisons pour le tour ID: {}", tourId);
-        List<DeliveryHistory> history = deliveryHistoryRepository.findByTourId(tourId);
-        
-        if (history.isEmpty()) {
-            log.warn("Aucun historique trouvé pour le tour ID: {}", tourId);
-            throw new NotFoundException("Aucun historique trouvé pour le tour ID: " + tourId);
-        }
-        
-        return history;
+    public Page<DeliveryHistory> findAll(Pageable pageable) {
+        log.debug("Fetching all delivery histories with pagination: {}", pageable);
+        return deliveryHistoryRepository.findAll(pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<DeliveryHistory> findById(Long id) {
+        log.debug("Fetching delivery history with id: {}", id);
+        return deliveryHistoryRepository.findById(id);
+    }
+    
+    @Transactional(readOnly = true)
+    public Page<DeliveryHistory> findByCustomerId(Long customerId, Pageable pageable) {
+        log.debug("Fetching delivery histories for customer id: {}", customerId);
+        return deliveryHistoryRepository.findByCustomerId(customerId, pageable);
+    }
+    
+    @Transactional(readOnly = true)
+    public Page<DeliveryHistory> findByTourId(Long tourId, Pageable pageable) {
+        log.debug("Fetching delivery histories for tour id: {}", tourId);
+        return deliveryHistoryRepository.findByTourId(tourId, pageable);
+    }
+    
+    @Transactional(readOnly = true)
+    public Page<DeliveryHistory> findByDeliveryDateBetween(LocalDate startDate, LocalDate endDate, Pageable pageable) {
+        log.debug("Fetching delivery histories between {} and {}", startDate, endDate);
+        return deliveryHistoryRepository.findByDeliveryDateBetween(startDate, endDate, pageable);
+    }
+    
+    @Transactional(readOnly = true)
+    public Map<String, Object> getCustomerDeliveryStats(Long customerId) {
+        log.debug("Fetching delivery stats for customer id: {}", customerId);
+        return Map.of(
+            "totalDeliveries", deliveryHistoryRepository.countByCustomerId(customerId),
+            "onTimeDeliveries", deliveryHistoryRepository.countByCustomerIdAndDelayMinutesLessThanEqual(customerId, 0),
+            "averageDelay", deliveryHistoryRepository.findAverageDelayByCustomerId(customerId).orElse(0.0)
+        );
+    }
+    
+    @Transactional(readOnly = true)
+    public Map<String, Object> getTourDeliveryStats(Long tourId) {
+        log.debug("Fetching delivery stats for tour id: {}", tourId);
+        return Map.of(
+            "totalDeliveries", deliveryHistoryRepository.countByTourId(tourId),
+            "onTimeDeliveries", deliveryHistoryRepository.countByTourIdAndDelayMinutesLessThanEqual(tourId, 0),
+            "averageDelay", deliveryHistoryRepository.findAverageDelayByTourId(tourId).orElse(0.0),
+            "totalDelay", deliveryHistoryRepository.findTotalDelayByTourId(tourId).orElse(0L)
+        );
     }
     
     private LocalTime extractPlannedTime(Delivery delivery) {
