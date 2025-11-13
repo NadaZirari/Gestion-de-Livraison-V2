@@ -16,12 +16,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@SuppressWarnings("null") // Suppression des avertissements de nullité pour ce fichier
 public class CustomerServiceImpl implements CustomerService {
 
     private final CustomerRepository customerRepository;
@@ -35,6 +37,7 @@ public class CustomerServiceImpl implements CustomerService {
         Page<Customer> customers = customerRepository.findAll(pageable);
         List<CustomerDto> dtos = customers.getContent().stream()
                 .map(customerMapper::toDto)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
         return new PageImpl<>(dtos, pageable, customers.getTotalElements());
     }
@@ -45,7 +48,13 @@ public class CustomerServiceImpl implements CustomerService {
     public Optional<CustomerDto> findById(@NonNull Long id) {
         log.debug("Fetching customer with id: {}", id);
         return customerRepository.findById(id)
-                .map(customerMapper::toDto);
+                .map(customer -> {
+                    CustomerDto dto = customerMapper.toDto(customer);
+                    if (dto == null) {
+                        throw new IllegalStateException("Mapping to DTO returned null for customer id: " + id);
+                    }
+                    return dto;
+                });
     }
 
     @Override
@@ -58,7 +67,11 @@ public class CustomerServiceImpl implements CustomerService {
         if (savedCustomer == null) {
             throw new IllegalStateException("Failed to save customer: returned null");
         }
-        return customerMapper.toDto(savedCustomer);
+        CustomerDto result = customerMapper.toDto(savedCustomer);
+        if (result == null) {
+            throw new IllegalStateException("Mapping to DTO returned null");
+        }
+        return result;
     }
 
     @Override
@@ -71,7 +84,11 @@ public class CustomerServiceImpl implements CustomerService {
                     customerMapper.updateCustomerFromDto(customerDto, existingCustomer);
                     Customer updatedCustomer = customerRepository.save(existingCustomer);
                     log.debug("Updated customer: {}", updatedCustomer);
-                    return customerMapper.toDto(updatedCustomer);
+                    CustomerDto result = customerMapper.toDto(updatedCustomer);
+                    if (result == null) {
+                        throw new IllegalStateException("Mapping to DTO returned null");
+                    }
+                    return result;
                 })
                 .orElseThrow(() -> new NotFoundException("Customer not found with id: " + id));
     }
@@ -84,7 +101,7 @@ public class CustomerServiceImpl implements CustomerService {
             throw new NotFoundException("Customer not found with id: " + id);
         }
         customerRepository.deleteById(id);
-        log.debug("Deleted customer with id: {}", id);
+        log.debug("Successfully deleted customer with id: {}", id);
     }
 
     @Override

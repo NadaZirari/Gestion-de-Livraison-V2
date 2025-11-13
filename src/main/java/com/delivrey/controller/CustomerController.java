@@ -318,6 +318,4 @@ public class CustomerController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-        return ResponseEntity.ok(customerService.search(name, address, pageable));
-    }
 }
