@@ -1,36 +1,30 @@
 package com.delivrey.mapper;
 
 import com.delivrey.dto.DeliveryDTO;
+import com.delivrey.entity.Customer;
 import com.delivrey.entity.Delivery;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
+import com.delivrey.entity.Tour;
+import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
 import org.springframework.lang.NonNull;
 
-@Mapper(componentModel = "spring")
+import java.util.Objects;
+
+@Mapper(componentModel = "spring", uses = {CustomerMapper.class})
 public interface DeliveryMapper {
     DeliveryMapper INSTANCE = Mappers.getMapper(DeliveryMapper.class);
     
-    @Mapping(target = "id", source = "id")
-    @Mapping(target = "address", source = "address")
-    @Mapping(target = "latitude", source = "latitude")
-    @Mapping(target = "longitude", source = "longitude")
-    @Mapping(target = "weight", source = "weight")
-    @Mapping(target = "volume", source = "volume")
-    @Mapping(target = "timeWindow", source = "timeWindow")
-    @Mapping(target = "status", source = "status")
+    @Mapping(target = "customerId", source = "customer.id")
+    @Mapping(target = "customerName", expression = "java(getCustomerName(delivery.getCustomer()))")
+    @Mapping(target = "tourId", source = "tour.id")
+    @Mapping(target = "createdAt", source = "createdAt")
+    @Mapping(target = "updatedAt", source = "updatedAt")
     @NonNull
     DeliveryDTO toDto(@NonNull Delivery delivery);
     
-    @Mapping(target = "id", source = "id")
-    @Mapping(target = "address", source = "address")
-    @Mapping(target = "latitude", source = "latitude")
-    @Mapping(target = "longitude", source = "longitude")
-    @Mapping(target = "weight", source = "weight")
-    @Mapping(target = "volume", source = "volume")
-    @Mapping(target = "timeWindow", source = "timeWindow")
-    @Mapping(target = "status", source = "status")
+    @Mapping(target = "customer", source = "customerId", qualifiedByName = "customerFromId")
+    @Mapping(target = "tour", source = "tourId", qualifiedByName = "tourFromId")
+    @Mapping(target = "deliveryHistories", ignore = true)
     @NonNull
     Delivery toEntity(@NonNull DeliveryDTO dto);
     
@@ -42,7 +36,37 @@ public interface DeliveryMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "deliveryHistories", ignore = true)
+    @Mapping(target = "customer", source = "customerId", qualifiedByName = "customerFromId")
+    @Mapping(target = "tour", source = "tourId", qualifiedByName = "tourFromId")
     void updateDeliveryFromDto(DeliveryDTO dto, @MappingTarget Delivery delivery);
+    
+    @Named("customerFromId")
+    default Customer customerFromId(Long id) {
+        if (id == null) {
+            return null;
+        }
+        Customer customer = new Customer();
+        customer.setId(id);
+        return customer;
+    }
+    
+    @Named("tourFromId")
+    default Tour tourFromId(Long id) {
+        if (id == null) {
+            return null;
+        }
+        Tour tour = new Tour();
+        tour.setId(id);
+        return tour;
+    }
+    
+    default String getCustomerName(Customer customer) {
+        if (customer == null) {
+            return null;
+        }
+        return customer.getName();
+    }
     
     default Delivery fromId(Long id) {
         if (id == null) {

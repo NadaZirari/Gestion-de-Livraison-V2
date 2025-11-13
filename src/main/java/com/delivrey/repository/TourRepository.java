@@ -1,9 +1,13 @@
 package com.delivrey.repository;
 
 import com.delivrey.entity.Tour;
+import com.delivrey.entity.TourStatus;
 
+import java.time.LocalDate;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -23,4 +27,12 @@ public interface TourRepository extends JpaRepository<Tour, Long> {
     Optional<Tour> findByIdWithDeliveries(@Param("id") Long id);
     
     List<Tour> findByVehicleId(Long vehicleId);
+    
+    List<Tour> findByTourStatus(TourStatus status);
+    
+    Page<Tour> findByTourStatus(TourStatus status, Pageable pageable);
+    
+    List<Tour> findByWarehouseId(Long warehouseId);
+    
+    List<Tour> findByTourDateBetween(LocalDate startDate, LocalDate endDate);
 }
