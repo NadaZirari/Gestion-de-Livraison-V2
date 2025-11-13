@@ -2,9 +2,14 @@ package com.delivrey.mapper;
 
 import com.delivrey.dto.TourDTO;
 import com.delivrey.entity.Tour;
+import com.delivrey.entity.Vehicle;
+import com.delivrey.entity.Warehouse;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.Named;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Component
@@ -23,9 +28,32 @@ public class TourMapperImpl implements TourMapper {
         
         if (tour.getVehicle() != null) {
             dto.setVehicleId(tour.getVehicle().getId());
+            // Note: La propriété getDriver() n'existe pas sur Vehicle
+            // Cette partie doit être gérée différemment si nécessaire
         }
         
+        if (tour.getWarehouse() != null) {
+            dto.setWarehouseId(tour.getWarehouse().getId());
+        }
+        
+        if (tour.getDeliveries() != null && !tour.getDeliveries().isEmpty()) {
+            dto.setDeliveryIds(mapDeliveriesToIds(tour.getDeliveries()));
+        }
+        
+        dto.setAlgorithmUsed(tour.getAlgorithmUsed());
+        
         return dto;
+    }
+    
+    @Override
+    public List<Long> mapDeliveriesToIds(List<com.delivrey.entity.Delivery> deliveries) {
+        if (deliveries == null) {
+            return null;
+        }
+        return deliveries.stream()
+                .filter(Objects::nonNull)
+                .map(com.delivrey.entity.Delivery::getId)
+                .collect(Collectors.toList());
     }
     
     @Override
@@ -35,6 +63,16 @@ public class TourMapperImpl implements TourMapper {
         }
         
         Tour tour = new Tour();
+        updateTourFromDto(tourDTO, tour);
+        return tour;
+    }
+    
+    @Override
+    public void updateTourFromDto(TourDTO tourDTO, @MappingTarget Tour tour) {
+        if (tourDTO == null || tour == null) {
+            return;
+        }
+        
         tour.setId(tourDTO.getId());
         tour.setTourDate(tourDTO.getDate());
         
@@ -42,25 +80,31 @@ public class TourMapperImpl implements TourMapper {
             tour.setTourStatus(tourDTO.getStatus());
         }
         
-        // Note: The vehicle would need to be set by the service layer
+        // Vehicle et Warehouse sont gérés séparément dans le service
+        // car ils nécessitent des appels à la base de données
         
-        return tour;
+        tour.setAlgorithmUsed(tourDTO.getAlgorithmUsed());
     }
     
+    @Named("mapToVehicle")
     @Override
-    public TourDTO toDtoWithDeliveries(Tour tour) {
-        if (tour == null) {
+    public Vehicle mapToVehicle(Long vehicleId) {
+        if (vehicleId == null) {
             return null;
         }
-        
-        TourDTO dto = toDto(tour);
-        
-        if (tour.getDeliveries() != null) {
-            dto.setDeliveryIds(tour.getDeliveries().stream()
-                    .map(delivery -> delivery.getId())
-                    .collect(Collectors.toList()));
+        Vehicle vehicle = new Vehicle();
+        vehicle.setId(vehicleId);
+        return vehicle;
+    }
+    
+    @Named("mapToWarehouse")
+    @Override
+    public Warehouse mapToWarehouse(Long warehouseId) {
+        if (warehouseId == null) {
+            return null;
         }
-        
-        return dto;
+        Warehouse warehouse = new Warehouse();
+        warehouse.setId(warehouseId);
+        return warehouse;
     }
 }
