@@ -15,6 +15,14 @@ springdoc:
   api-docs.enabled: true
   swagger-ui.enabled: true
 
+# AI Optimizer Configuration
+app:
+  optimizer:
+    ai:
+      enabled: false  # Set to true to enable AI optimization
+      model: gpt-3.5-turbo
+      temperature: 0.7
+
 # Configuration Spring principale
 spring:
   application:
@@ -24,19 +32,54 @@ spring:
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.xml
     
-  # Configuration JPA commune
+  # Configuration JPA
   jpa:
     open-in-view: false
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+      jdbc:
+        lob:
+          non_contextual_creation: true
     properties:
       hibernate:
-        jdbc:
-          lob:
-            non_contextual_creation: true
+        dialect: org.hibernate.dialect.H2Dialect
+        hbm2ddl:
+          auto: update
+      javax.persistence.schema-generation.database.action: update
   
   # Configuration des messages
   messages:
     basename: i18n/messages
     encoding: UTF-8
+    
+  # Configuration du cache
+  cache:
+    type: simple
+    cache-names:
+      - customers
+      - deliveries
+      - tours
+      
+  # Configuration de la base de données H2
+  datasource:
+    url: jdbc:h2:mem:deliverydb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+    
+  # Configuration de la console H2
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      settings:
+        web-allow-others: true
+        trace: false
+        
+  # Configuration du chemin de base
+  web:
+    base-path: /api  # This ensures H2 console works with the context path
 
 # Configuration des logs (peut être surchargée par les profils)
 logging:
@@ -66,38 +109,6 @@ task:
       await-termination: true
       await-termination-period: 30s
 
-# Configuration du cache
-spring:
-  cache:
-    type: simple
-    cache-names:
-      - customers
-      - deliveries
-      - tours
-  datasource:
-    url: jdbc:h2:mem:deliverydb
-    driver-class-name: org.h2.Driver
-    username: sa
-    password: 
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
-      settings:
-        web-allow-others: true
-        trace: false
-  web:
-    base-path: /api  # This ensures H2 console works with the context path
-  jpa:
-    show-sql: true
-    hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.H2Dialect
-        hbm2ddl:
-          auto: update
-      javax.persistence.schema-generation.database.action: update
       hibernate.format_sql: true
       hibernate.use_sql_comments: true
       hibernate.type: trace
