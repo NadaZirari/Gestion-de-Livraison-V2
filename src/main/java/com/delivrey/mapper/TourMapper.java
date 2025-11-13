@@ -2,13 +2,10 @@ package com.delivrey.mapper;
 
 import com.delivrey.dto.TourDTO;
 import com.delivrey.entity.Tour;
-import org.mapstruct.Mapper;
-import org.mapstruct.factory.Mappers;
+import org.springframework.stereotype.Component;
 
-@Mapper(componentModel = "spring")
+@Component
 public interface TourMapper {
-    
-    TourMapper INSTANCE = Mappers.getMapper(TourMapper.class);
     
     TourDTO toDto(Tour tour);
     

@@ -24,18 +24,18 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     @NonNull
     List<Customer> findByNameContainingIgnoreCase(@NonNull String name);
     
-    // Search customers by name containing (case-insensitive) with pagination
+    // Search customers by first name containing (case-insensitive) with pagination
     @NonNull
-    Page<Customer> findByNameContainingIgnoreCase(@NonNull String name, @NonNull Pageable pageable);
+    Page<Customer> findByFirstNameContainingIgnoreCase(@NonNull String firstName, @NonNull Pageable pageable);
     
     // Search customers by address containing (case-insensitive) with pagination
     @NonNull
     Page<Customer> findByAddressContainingIgnoreCase(@NonNull String address, @NonNull Pageable pageable);
     
-    // Search customers by name and address containing (case-insensitive) with pagination
+    // Search customers by first name and address containing (case-insensitive) with pagination
     @NonNull
-    Page<Customer> findByNameContainingIgnoreCaseAndAddressContainingIgnoreCase(
-        @Nullable String name, @Nullable String address, @NonNull Pageable pageable);
+    Page<Customer> findByFirstNameContainingIgnoreCaseAndAddressContainingIgnoreCase(
+        @Nullable String firstName, @Nullable String address, @NonNull Pageable pageable);
         
     @Override
     @NonNull

@@ -27,6 +27,11 @@ app:
 spring:
   application:
     name: delivery-service
+  cloud:
+    function:
+      enabled: false
+  autoconfigure:
+    exclude: org.springframework.cloud.function.context.config.ContextFunctionCatalogAutoConfiguration
   
   # Configuration de Liquibase
   liquibase:

@@ -7,6 +7,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
 /**
  * Represents a delivery that needs to be made to a customer.
  * Contains delivery details including location, dimensions, and status.
@@ -15,6 +18,8 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @Table(name = "delivery")
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+
 public class Delivery {
     
     @Id

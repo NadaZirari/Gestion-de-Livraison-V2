@@ -1,18 +1,23 @@
 package com.delivrey.service.impl;
 
+import com.delivrey.dto.CustomerDto;
 import com.delivrey.entity.Customer;
 import com.delivrey.exception.NotFoundException;
+import com.delivrey.mapper.CustomerMapper;
 import com.delivrey.repository.CustomerRepository;
 import com.delivrey.service.CustomerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -20,48 +25,53 @@ import java.util.Optional;
 public class CustomerServiceImpl implements CustomerService {
 
     private final CustomerRepository customerRepository;
+    private final CustomerMapper customerMapper;
 
     @Override
     @Transactional(readOnly = true)
     @NonNull
-    public Page<Customer> findAll(@NonNull Pageable pageable) {
+    public Page<CustomerDto> findAll(@NonNull Pageable pageable) {
         log.debug("Fetching all customers with pagination: {}", pageable);
-        return customerRepository.findAll(pageable);
+        Page<Customer> customers = customerRepository.findAll(pageable);
+        List<CustomerDto> dtos = customers.getContent().stream()
+                .map(customerMapper::toDto)
+                .collect(Collectors.toList());
+        return new PageImpl<>(dtos, pageable, customers.getTotalElements());
     }
 
     @Override
     @Transactional(readOnly = true)
     @NonNull
-    public Optional<Customer> findById(@NonNull Long id) {
+    public Optional<CustomerDto> findById(@NonNull Long id) {
         log.debug("Fetching customer with id: {}", id);
-        return customerRepository.findById(id);
+        return customerRepository.findById(id)
+                .map(customerMapper::toDto);
     }
 
     @Override
     @Transactional
     @NonNull
-    public Customer save(@NonNull Customer customer) {
-        log.debug("Saving new customer: {}", customer);
+    public CustomerDto save(@NonNull CustomerDto customerDto) {
+        log.debug("Saving new customer: {}", customerDto);
+        Customer customer = customerMapper.toEntity(customerDto);
         Customer savedCustomer = customerRepository.save(customer);
         if (savedCustomer == null) {
             throw new IllegalStateException("Failed to save customer: returned null");
         }
-        return savedCustomer;
+        return customerMapper.toDto(savedCustomer);
     }
 
     @Override
     @Transactional
     @NonNull
-    public Customer update(@NonNull Long id, @NonNull Customer customerDetails) {
-        log.debug("Updating customer with id {}: {}", id, customerDetails);
+    public CustomerDto update(@NonNull Long id, @NonNull CustomerDto customerDto) {
+        log.debug("Updating customer with id {}: {}", id, customerDto);
         return customerRepository.findById(id)
                 .map(existingCustomer -> {
-                    existingCustomer.setName(customerDetails.getName());
-                    existingCustomer.setAddress(customerDetails.getAddress());
-                    existingCustomer.setLatitude(customerDetails.getLatitude());
-                    existingCustomer.setLongitude(customerDetails.getLongitude());
-                    existingCustomer.setPreferredTimeSlot(customerDetails.getPreferredTimeSlot());
-                    return customerRepository.save(existingCustomer);
+                    customerMapper.updateCustomerFromDto(customerDto, existingCustomer);
+                    Customer updatedCustomer = customerRepository.save(existingCustomer);
+                    log.debug("Updated customer: {}", updatedCustomer);
+                    return customerMapper.toDto(updatedCustomer);
                 })
                 .orElseThrow(() -> new NotFoundException("Customer not found with id: " + id));
     }
@@ -74,20 +84,29 @@ public class CustomerServiceImpl implements CustomerService {
             throw new NotFoundException("Customer not found with id: " + id);
         }
         customerRepository.deleteById(id);
+        log.debug("Deleted customer with id: {}", id);
     }
 
     @Override
     @Transactional(readOnly = true)
     @NonNull
-    public Page<Customer> search(String name, String address, @NonNull Pageable pageable) {
+    public Page<CustomerDto> search(String name, String address, @NonNull Pageable pageable) {
         log.debug("Searching customers with name: {}, address: {}", name, address);
+        Page<Customer> customers;
         if (name != null && address != null) {
-            return customerRepository.findByNameContainingIgnoreCaseAndAddressContainingIgnoreCase(name, address, pageable);
+            customers = customerRepository.findByFirstNameContainingIgnoreCaseAndAddressContainingIgnoreCase(name, address, pageable);
         } else if (name != null) {
-            return customerRepository.findByNameContainingIgnoreCase(name, pageable);
+            customers = customerRepository.findByFirstNameContainingIgnoreCase(name, pageable);
         } else if (address != null) {
-            return customerRepository.findByAddressContainingIgnoreCase(address, pageable);
+            customers = customerRepository.findByAddressContainingIgnoreCase(address, pageable);
+        } else {
+            customers = customerRepository.findAll(pageable);
         }
-        return customerRepository.findAll(pageable);
+        
+        List<CustomerDto> dtos = customers.getContent().stream()
+                .map(customerMapper::toDto)
+                .collect(Collectors.toList());
+                
+        return new PageImpl<>(dtos, pageable, customers.getTotalElements());
     }
 }

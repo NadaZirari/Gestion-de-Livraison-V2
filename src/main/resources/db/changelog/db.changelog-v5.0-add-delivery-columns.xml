@@ -1,0 +1,40 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog 
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+
+    <changeSet id="v5.0-add-delivery-columns" author="dev">
+        <comment>Add missing columns to delivery table</comment>
+        
+        <!-- Add missing columns to delivery table -->
+        <addColumn tableName="delivery">
+            <column name="latitude" type="DECIMAL(10,8)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="longitude" type="DECIMAL(11,8)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="weight" type="DECIMAL(10,2)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="volume" type="DECIMAL(10,3)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="time_window" type="VARCHAR(20)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+        
+        <!-- Add rollback script -->
+        <rollback>
+            <dropColumn tableName="delivery" columnName="latitude"/>
+            <dropColumn tableName="delivery" columnName="longitude"/>
+            <dropColumn tableName="delivery" columnName="weight"/>
+            <dropColumn tableName="delivery" columnName="volume"/>
+            <dropColumn tableName="delivery" columnName="time_window"/>
+        </rollback>
+    </changeSet>
+    
+</databaseChangeLog>

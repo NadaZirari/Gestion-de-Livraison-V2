@@ -13,17 +13,21 @@ public class SwaggerConfig {
     @Bean
     public GroupedOpenApi publicApi() {
         return GroupedOpenApi.builder()
-                .group("delivery-public")
-                .pathsToMatch("/api/**")
+                .group("delivery")
+                .pathsToMatch("/**")
+                .packagesToScan("com.delivrey.controller")
                 .build();
     }
 
     @Bean
     public OpenAPI deliveryOpenAPI() {
         return new OpenAPI()
-                .info(new Info().title("Delivery Management API")
-                        .description("API for managing deliveries and tours")
-                        .version("v1.0.0")
-                        .license(new License().name("Apache 2.0")));
+                .info(new Info()
+                    .title("Delivery Management API")
+                    .description("API for managing delivery operations and tours")
+                    .version("2.0.0")
+                    .license(new License()
+                        .name("Apache 2.0")
+                        .url("https://springdoc.org")));
     }
 }

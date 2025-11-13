@@ -3,11 +3,7 @@ package com.delivrey.config;
 import com.delivrey.optimizer.ClarkeWrightOptimizer;
 import com.delivrey.optimizer.NearestNeighborOptimizer;
 import com.delivrey.optimizer.TourOptimizer;
-import com.delivrey.optimizer.ai.AIOptimizer;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.ai.chat.ChatClient;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,9 +26,5 @@ public class OptimizerConfig {
         return new ClarkeWrightOptimizer();
     }
     
-    @Bean
-    @ConditionalOnProperty(name = "app.optimizer.ai.enabled", havingValue = "true")
-    public TourOptimizer aiOptimizer(ChatClient chatClient, ObjectMapper objectMapper, OptimizerProperties properties) {
-        return new AIOptimizer(chatClient, objectMapper);
-    }
+    // L'optimiseur IA a été désactivé pour le moment
 }

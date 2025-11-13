@@ -1,6 +1,6 @@
 package com.delivrey.controller;
 
-import com.delivrey.entity.Customer;
+import com.delivrey.dto.CustomerDto;
 import com.delivrey.service.CustomerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -11,18 +11,24 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
+import java.util.Optional;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/customers")
+@RequiredArgsConstructor
 @Tag(
     name = "Customer API",
     description = "API pour la gestion des clients",
@@ -37,10 +43,6 @@ public class CustomerController {
     private final CustomerService customerService;
     private static final String CUSTOMER_NOT_FOUND = "Client non trouvé avec l'ID fourni";
     private static final String INVALID_REQUEST = "Requête invalide";
-
-    public CustomerController(CustomerService customerService) {
-        this.customerService = customerService;
-    }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
@@ -82,9 +84,64 @@ public class CustomerController {
             content = @Content
         )
     })
-    public ResponseEntity<Page<Customer>> getAllCustomers(
+    public ResponseEntity<Page<CustomerDto>> getAllCustomers(
             @Parameter(hidden = true) @PageableDefault(size = 20) @NonNull Pageable pageable) {
-        return ResponseEntity.ok(customerService.findAll(pageable));
+        try {
+            log.info("Fetching all customers with pagination: {}", pageable);
+            return ResponseEntity.ok(customerService.findAll(pageable));
+        } catch (Exception e) {
+            log.error("Error fetching customers: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/search")
+    @Operation(
+        summary = "Recherche des clients",
+        description = "Recherche des clients par nom et/ou adresse"
+    )
+    @Parameter(
+        name = "name",
+        description = "Nom du client à rechercher (optionnel)",
+        example = "John",
+        schema = @Schema(type = "string")
+    )
+    @Parameter(
+        name = "address",
+        description = "Adresse à rechercher (optionnel)",
+        example = "Paris",
+        schema = @Schema(type = "string")
+    )
+    @Parameter(
+        name = "page",
+        description = "Numéro de page (0-based)",
+        example = "0",
+        schema = @Schema(type = "integer", defaultValue = "0")
+    )
+    @Parameter(
+        name = "size",
+        description = "Nombre d'éléments par page",
+        example = "20",
+        schema = @Schema(type = "integer", defaultValue = "20")
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200",
+            description = "Résultats de la recherche",
+            content = @Content(mediaType = "application/json")
+        )
+    })
+    public ResponseEntity<Page<CustomerDto>> searchCustomers(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String address,
+            @Parameter(hidden = true) @PageableDefault(size = 20) Pageable pageable) {
+        try {
+            log.info("Searching customers with name: {}, address: {}", name, address);
+            return ResponseEntity.ok(customerService.search(name, address, pageable));
+        } catch (Exception e) {
+            log.error("Error searching customers: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -102,34 +159,32 @@ public class CustomerController {
     @ApiResponses({
         @ApiResponse(
             responseCode = "200",
-            description = "Client trouvé",
+            description = "Client trouvé avec succès",
             content = @Content(
                 mediaType = "application/json",
-                schema = @Schema(implementation = Customer.class)
+                schema = @Schema(implementation = CustomerDto.class)
             )
         ),
         @ApiResponse(
             responseCode = "404",
-            description = CUSTOMER_NOT_FOUND,
-            content = @Content
-        ),
-        @ApiResponse(
-            responseCode = "400",
-            description = INVALID_REQUEST,
+            description = "Client non trouvé",
             content = @Content
         )
     })
-    public ResponseEntity<Customer> getCustomerById(
+    public ResponseEntity<CustomerDto> getCustomerById(
             @PathVariable @NonNull Long id) {
-        return customerService.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        try {
+            log.info("Fetching customer with id: {}", id);
+            return customerService.findById(id)
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+        } catch (Exception e) {
+            log.error("Error fetching customer with id {}: {}", id, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
-    @PostMapping(
-        consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE
-    )
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
         summary = "Crée un nouveau client",
         description = "Crée un nouveau client avec les informations fournies"
@@ -139,46 +194,46 @@ public class CustomerController {
         required = true,
         content = @Content(
             mediaType = "application/json",
-            schema = @Schema(implementation = Customer.class),
+            schema = @Schema(implementation = CustomerDto.class),
             examples = @ExampleObject(
-                name = "customerExample",
-                value = "{\"name\": \"John Doe\", \"email\": \"john@example.com\", \"address\": \"123 Main St\"}"
+                name = "CustomerExample",
+                value = "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"phone\": \"+1234567890\",\n  \"address\": \"123 Main St, City, Country\"\n}"
             )
         )
     )
     @ApiResponses({
         @ApiResponse(
-            responseCode = "200",
+            responseCode = "201",
             description = "Client créé avec succès",
             content = @Content(
                 mediaType = "application/json",
-                schema = @Schema(implementation = Customer.class)
+                schema = @Schema(implementation = CustomerDto.class)
             )
         ),
         @ApiResponse(
             responseCode = "400",
             description = "Données du client invalides",
             content = @Content
-        ),
-        @ApiResponse(
-            responseCode = "409",
-            description = "Un client avec cet email existe déjà",
-            content = @Content
         )
     })
-public ResponseEntity<Customer> createCustomer(
-            @Valid @org.springframework.web.bind.annotation.RequestBody @NonNull Customer customer) {
-        return ResponseEntity.ok(customerService.save(customer));
+    public ResponseEntity<CustomerDto> createCustomer(
+            @Valid @RequestBody CustomerDto customerDto) {
+        try {
+            log.info("Creating new customer: {}", customerDto);
+            CustomerDto savedCustomer = customerService.save(customerDto);
+            return ResponseEntity
+                    .status(HttpStatus.CREATED)
+                    .body(savedCustomer);
+        } catch (Exception e) {
+            log.error("Error creating customer: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
-    @PutMapping(
-        value = "/{id}",
-        consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE
-    )
+    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
         summary = "Met à jour un client existant",
-        description = "Met à jour les informations d'un client existant en fonction de son ID"
+        description = "Met à jour les informations d'un client existant avec l'ID fourni"
     )
     @Parameter(
         name = "id",
@@ -192,7 +247,7 @@ public ResponseEntity<Customer> createCustomer(
         required = true,
         content = @Content(
             mediaType = "application/json",
-            schema = @Schema(implementation = Customer.class)
+            schema = @Schema(implementation = CustomerDto.class)
         )
     )
     @ApiResponses({
@@ -201,30 +256,36 @@ public ResponseEntity<Customer> createCustomer(
             description = "Client mis à jour avec succès",
             content = @Content(
                 mediaType = "application/json",
-                schema = @Schema(implementation = Customer.class)
+                schema = @Schema(implementation = CustomerDto.class)
             )
         ),
         @ApiResponse(
-            responseCode = "404",
-            description = CUSTOMER_NOT_FOUND,
+            responseCode = "400",
+            description = "Données du client invalides",
             content = @Content
         ),
         @ApiResponse(
-            responseCode = "400",
-            description = INVALID_REQUEST,
+            responseCode = "404",
+            description = "Client non trouvé",
             content = @Content
         )
     })
-    public ResponseEntity<Customer> updateCustomer(
+    public ResponseEntity<CustomerDto> updateCustomer(
             @PathVariable @NonNull Long id,
-            @Valid @org.springframework.web.bind.annotation.RequestBody @NonNull Customer customer) {
-        return ResponseEntity.ok(customerService.update(id, customer));
+            @Valid @RequestBody CustomerDto customerDto) {
+        try {
+            log.info("Updating customer with id {}: {}", id, customerDto);
+            return ResponseEntity.ok(customerService.update(id, customerDto));
+        } catch (Exception e) {
+            log.error("Error updating customer with id {}: {}", id, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @DeleteMapping("/{id}")
     @Operation(
         summary = "Supprime un client",
-        description = "Supprime un client en fonction de son ID. Cette action est irréversible."
+        description = "Supprime un client existant avec l'ID fourni"
     )
     @Parameter(
         name = "id",
@@ -241,31 +302,22 @@ public ResponseEntity<Customer> createCustomer(
         ),
         @ApiResponse(
             responseCode = "404",
-            description = CUSTOMER_NOT_FOUND,
-            content = @Content
-        ),
-        @ApiResponse(
-            responseCode = "400",
-            description = INVALID_REQUEST,
-            content = @Content
-        ),
-        @ApiResponse(
-            responseCode = "409",
-            description = "Impossible de supprimer le client car il est associé à des livraisons",
+            description = "Client non trouvé",
             content = @Content
         )
     })
-    public ResponseEntity<Void> deleteCustomer(@PathVariable @NonNull Long id) {
-        customerService.deleteById(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<Void> deleteCustomer(
+            @PathVariable @NonNull Long id) {
+        try {
+            log.info("Deleting customer with id: {}", id);
+            customerService.deleteById(id);
+            log.info("Successfully deleted customer with id: {}", id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            log.error("Error deleting customer with id {}: {}", id, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
-
-    @GetMapping("/search")
-    @Operation(summary = "Recherche des clients avec filtres")
-    public ResponseEntity<Page<Customer>> searchCustomers(
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String address,
-            @PageableDefault(size = 20) @NonNull Pageable pageable) {
         return ResponseEntity.ok(customerService.search(name, address, pageable));
     }
 }

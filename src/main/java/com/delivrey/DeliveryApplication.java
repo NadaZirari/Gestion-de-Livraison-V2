@@ -7,7 +7,7 @@ import org.springframework.context.annotation.ImportResource;
 
 @SpringBootApplication
 @EnableAsync
-@ImportResource("classpath:applicationContext.xml")
+@ImportResource("classpath:/applicationContext.xml")
 public class DeliveryApplication {
     public static void main(String[] args) {
         SpringApplication.run(DeliveryApplication.class, args);

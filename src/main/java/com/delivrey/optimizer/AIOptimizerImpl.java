@@ -19,6 +19,7 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StreamUtils;
+import org.springframework.context.annotation.Profile;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -28,6 +29,7 @@ import java.util.Map;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Profile("ai")  // Ne sera chargé que si le profil 'ai' est actif
 public class AIOptimizerImpl implements AIOptimizer {
 
     private final ChatClient chatClient;

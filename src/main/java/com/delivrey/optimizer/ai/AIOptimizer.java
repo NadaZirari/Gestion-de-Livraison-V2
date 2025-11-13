@@ -11,6 +11,7 @@ import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Component
+@Profile("ai")  // Ne sera chargé que si le profil 'ai' est actif
 @RequiredArgsConstructor
 public class AIOptimizer implements TourOptimizer {
 
