@@ -2,9 +2,8 @@ package com.delivrey.mapper;
 
 import com.delivrey.dto.TourDTO;
 import com.delivrey.entity.Tour;
+import org.mapstruct.MappingTarget;
 import org.springframework.stereotype.Component;
-
-import java.util.Collections;
 
 @Component
 public class TestTourMapper implements TourMapper {
@@ -34,20 +33,17 @@ public class TestTourMapper implements TourMapper {
     }
     
     @Override
-    public TourDTO toDtoWithDeliveries(Tour tour) {
-        if (tour == null) {
-            return null;
+    public void updateTourFromDto(TourDTO dto, @MappingTarget Tour tour) {
+        if (dto == null || tour == null) {
+            return;
         }
         
-        TourDTO dto = toDto(tour);
-        if (tour.getDeliveries() != null) {
-            dto.setDeliveryIds(tour.getDeliveries().stream()
-                    .map(delivery -> delivery.getId())
-                    .toList());
-        } else {
-            dto.setDeliveryIds(Collections.emptyList());
+        if (dto.getDate() != null) {
+            tour.setTourDate(dto.getDate());
         }
-        
-        return dto;
+        if (dto.getStatus() != null) {
+            tour.setTourStatus(dto.getStatus());
+        }
+        // Note: Les livraisons sont ignorées comme spécifié dans le mapper principal
     }
 }

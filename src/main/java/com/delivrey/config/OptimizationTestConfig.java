@@ -1,7 +1,7 @@
 package com.delivrey.config;
 
+import com.delivrey.dto.DeliveryHistoryDto;
 import com.delivrey.entity.Delivery;
-import com.delivrey.entity.DeliveryHistory;
 import com.delivrey.optimizer.Optimizer;
 import com.delivrey.optimizer.TourOptimizer;
 import com.delivrey.optimizer.model.OptimizationConstraints;
@@ -26,7 +26,7 @@ public class OptimizationTestConfig {
     public Optimizer optimizer() {
         return new Optimizer() {
             @Override
-            public OptimizedPlan optimize(List<DeliveryHistory> history, OptimizationConstraints constraints) {
+            public OptimizedPlan optimize(List<DeliveryHistoryDto> history, OptimizationConstraints constraints) {
                 // Return a simple mock plan
                 return OptimizedPlan.builder()
                         .orderedDeliveries(List.of()) // Empty list of deliveries
