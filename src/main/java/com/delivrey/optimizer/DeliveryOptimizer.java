@@ -1,6 +1,6 @@
 package com.delivrey.optimizer;
 
-import com.delivrey.entity.Delivery;
+import com.delivrey.dto.DeliveryDTO;
 import java.util.List;
 
 /**
@@ -13,7 +13,7 @@ public interface DeliveryOptimizer {
      * @param deliveries List of deliveries to optimize
      * @return Optimized list of deliveries
      */
-    List<Delivery> optimize(List<Delivery> deliveries);
+    List<DeliveryDTO> optimize(List<DeliveryDTO> deliveries);
     
     /**
      * Gets the type/name of the optimizer.

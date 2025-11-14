@@ -1,6 +1,6 @@
 package com.delivrey.service;
 
-import com.delivrey.entity.DeliveryHistory;
+import com.delivrey.dto.DeliveryHistoryDto;
 import com.delivrey.entity.Tour;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,23 +18,23 @@ public interface DeliveryHistoryService {
 
     @Transactional(readOnly = true)
     @NonNull
-    Page<DeliveryHistory> findAll(@NonNull Pageable pageable);
+    Page<DeliveryHistoryDto> findAll(@NonNull Pageable pageable);
 
     @Transactional(readOnly = true)
     @NonNull
-    Optional<DeliveryHistory> findById(@NonNull Long id);
+    Optional<DeliveryHistoryDto> findById(@NonNull Long id);
     
     @Transactional(readOnly = true)
     @NonNull
-    Page<DeliveryHistory> findByCustomerId(@NonNull Long customerId, @NonNull Pageable pageable);
+    Page<DeliveryHistoryDto> findByCustomerId(@NonNull Long customerId, @NonNull Pageable pageable);
     
     @Transactional(readOnly = true)
     @NonNull
-    Page<DeliveryHistory> findByTourId(@NonNull Long tourId, @NonNull Pageable pageable);
+    Page<DeliveryHistoryDto> findByTourId(@NonNull Long tourId, @NonNull Pageable pageable);
     
     @Transactional(readOnly = true)
     @NonNull
-    Page<DeliveryHistory> findByDeliveryDateBetween(
+    Page<DeliveryHistoryDto> findByDeliveryDateBetween(
             @NonNull LocalDate startDate, 
             @NonNull LocalDate endDate, 
             @NonNull Pageable pageable);

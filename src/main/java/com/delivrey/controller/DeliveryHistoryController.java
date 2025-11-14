@@ -1,6 +1,6 @@
 package com.delivrey.controller;
 
-import com.delivrey.entity.DeliveryHistory;
+import com.delivrey.dto.DeliveryHistoryDto;
 import com.delivrey.service.DeliveryHistoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,7 +27,7 @@ public class DeliveryHistoryController {
 
     @GetMapping
     @Operation(summary = "Récupère tous les historiques de livraison avec pagination et filtres")
-    public ResponseEntity<Page<DeliveryHistory>> getAllDeliveryHistories(
+    public ResponseEntity<Page<DeliveryHistoryDto>> getAllDeliveryHistories(
             @RequestParam(required = false) Long customerId,
             @RequestParam(required = false) Long tourId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
@@ -47,7 +47,7 @@ public class DeliveryHistoryController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Récupère un historique de livraison par son ID")
-    public ResponseEntity<DeliveryHistory> getDeliveryHistoryById(@PathVariable @NonNull Long id) {
+    public ResponseEntity<DeliveryHistoryDto> getDeliveryHistoryById(@PathVariable @NonNull Long id) {
         return deliveryHistoryService.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());

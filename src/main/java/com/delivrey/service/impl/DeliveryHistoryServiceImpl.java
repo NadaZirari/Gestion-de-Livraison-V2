@@ -1,14 +1,17 @@
 package com.delivrey.service.impl;
 
+import com.delivrey.dto.DeliveryHistoryDto;
 import com.delivrey.entity.Delivery;
 import com.delivrey.entity.DeliveryHistory;
 import com.delivrey.entity.Tour;
 import com.delivrey.entity.TourStatus;
+import com.delivrey.mapper.DeliveryHistoryMapper;
 import com.delivrey.repository.DeliveryHistoryRepository;
 import com.delivrey.service.DeliveryHistoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
@@ -17,9 +20,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -27,6 +32,7 @@ import java.util.Optional;
 public class DeliveryHistoryServiceImpl implements DeliveryHistoryService {
 
     private final DeliveryHistoryRepository deliveryHistoryRepository;
+    private final DeliveryHistoryMapper deliveryHistoryMapper;
 
     @Override
     @Transactional
@@ -50,44 +56,65 @@ public class DeliveryHistoryServiceImpl implements DeliveryHistoryService {
     @Override
     @Transactional(readOnly = true)
     @NonNull
-    public Page<DeliveryHistory> findAll(@NonNull Pageable pageable) {
+    public Page<DeliveryHistoryDto> findAll(@NonNull Pageable pageable) {
         log.debug("Fetching all delivery histories with pagination: {}", pageable);
-        return deliveryHistoryRepository.findAll(pageable);
+        Page<DeliveryHistory> histories = deliveryHistoryRepository.findAll(pageable);
+        List<DeliveryHistoryDto> dtos = histories.getContent().stream()
+                .map(deliveryHistoryMapper::toDto)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+        return new PageImpl<>(dtos, pageable, histories.getTotalElements());
     }
 
     @Override
     @Transactional(readOnly = true)
     @NonNull
-    public Optional<DeliveryHistory> findById(@NonNull Long id) {
+    public Optional<DeliveryHistoryDto> findById(@NonNull Long id) {
         log.debug("Fetching delivery history with id: {}", id);
-        return deliveryHistoryRepository.findById(id);
+        return deliveryHistoryRepository.findById(id)
+                .map(deliveryHistoryMapper::toDto);
     }
 
     @Override
     @Transactional(readOnly = true)
     @NonNull
-    public Page<DeliveryHistory> findByCustomerId(@NonNull Long customerId, @NonNull Pageable pageable) {
+    public Page<DeliveryHistoryDto> findByCustomerId(@NonNull Long customerId, @NonNull Pageable pageable) {
         log.debug("Fetching delivery histories for customer id: {}", customerId);
-        return deliveryHistoryRepository.findByCustomerId(customerId, pageable);
+        Page<DeliveryHistory> histories = deliveryHistoryRepository.findByCustomerId(customerId, pageable);
+        List<DeliveryHistoryDto> dtos = histories.getContent().stream()
+                .map(deliveryHistoryMapper::toDto)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+        return new PageImpl<>(dtos, pageable, histories.getTotalElements());
     }
 
     @Override
     @Transactional(readOnly = true)
     @NonNull
-    public Page<DeliveryHistory> findByTourId(@NonNull Long tourId, @NonNull Pageable pageable) {
+    public Page<DeliveryHistoryDto> findByTourId(@NonNull Long tourId, @NonNull Pageable pageable) {
         log.debug("Fetching delivery histories for tour id: {}", tourId);
-        return deliveryHistoryRepository.findByTourId(tourId, pageable);
+        Page<DeliveryHistory> histories = deliveryHistoryRepository.findByTourId(tourId, pageable);
+        List<DeliveryHistoryDto> dtos = histories.getContent().stream()
+                .map(deliveryHistoryMapper::toDto)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+        return new PageImpl<>(dtos, pageable, histories.getTotalElements());
     }
 
     @Override
     @Transactional(readOnly = true)
     @NonNull
-    public Page<DeliveryHistory> findByDeliveryDateBetween(
+    public Page<DeliveryHistoryDto> findByDeliveryDateBetween(
             @NonNull LocalDate startDate,
             @NonNull LocalDate endDate,
             @NonNull Pageable pageable) {
         log.debug("Fetching delivery histories between {} and {}", startDate, endDate);
-        return deliveryHistoryRepository.findByDeliveryDateBetween(startDate, endDate, pageable);
+        Page<DeliveryHistory> histories = deliveryHistoryRepository.findByDeliveryDateBetween(startDate, endDate, pageable);
+        List<DeliveryHistoryDto> dtos = histories.getContent().stream()
+                .map(deliveryHistoryMapper::toDto)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+        return new PageImpl<>(dtos, pageable, histories.getTotalElements());
     }
 
     @Override

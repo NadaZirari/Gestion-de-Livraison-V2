@@ -1,6 +1,6 @@
 package com.delivrey.optimizer;
 
-import com.delivrey.entity.DeliveryHistory;
+import com.delivrey.dto.DeliveryHistoryDto;
 import com.delivrey.optimizer.model.OptimizedPlan;
 import com.delivrey.optimizer.model.OptimizationConstraints;
 
@@ -18,7 +18,7 @@ public interface Optimizer {
      * @param constraints Contraintes d'optimisation
      * @return Un plan d'optimisation contenant les livraisons ordonnées et les recommandations
      */
-    OptimizedPlan optimize(List<DeliveryHistory> history, OptimizationConstraints constraints);
+    OptimizedPlan optimize(List<DeliveryHistoryDto> history, OptimizationConstraints constraints);
     
     /**
      * Vérifie si l'optimiseur est disponible pour le moment.

@@ -1,6 +1,6 @@
 package com.delivrey.optimizer;
 
-import com.delivrey.entity.Delivery;
+import com.delivrey.dto.DeliveryDTO;
 import org.springframework.stereotype.Component;
 
 import java.util.Comparator;
@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 public class AIDeliveryOptimizer implements DeliveryOptimizer {
 
     @Override
-    public List<Delivery> optimize(List<Delivery> deliveries) {
+    public List<DeliveryDTO> optimize(List<DeliveryDTO> deliveries) {
         // Simple optimization: sort by customer location (latitude + longitude)
         // This is a placeholder - in a real implementation, this would use more sophisticated logic
         return deliveries.stream()

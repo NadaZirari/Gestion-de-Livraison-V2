@@ -1,6 +1,6 @@
 package com.delivrey.controller;
 
-import com.delivrey.entity.DeliveryHistory;
+import com.delivrey.dto.DeliveryHistoryDto;
 import com.delivrey.optimizer.Optimizer;
 import com.delivrey.optimizer.model.OptimizationConstraints;
 import com.delivrey.optimizer.model.OptimizedPlan;
@@ -16,13 +16,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.lang.NonNull;
-
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.*;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
-import org.springframework.data.domain.Pageable;
 
 @Slf4j
 @RestController
@@ -65,7 +64,7 @@ public class OptimizationController {
             
             // Récupérer l'historique des livraisons pour ce tour avec pagination
             Pageable pageable = Pageable.unpaged(); // Récupérer tous les résultats sans pagination
-            List<DeliveryHistory> history = deliveryHistoryService.findByTourId(tourId, pageable).getContent();
+            List<DeliveryHistoryDto> history = deliveryHistoryService.findByTourId(tourId, pageable).getContent();
             
             // Préparer les contraintes d'optimisation
             OptimizationConstraints constraints = OptimizationConstraints.builder()
@@ -85,6 +84,8 @@ public class OptimizationController {
             
             // Effectuer l'optimisation
             log.debug("Starting optimization with {} delivery history entries", history.size());
+            
+            // Utiliser directement les DTOs avec l'optimiseur
             OptimizedPlan plan = optimizer.optimize(history, constraints);
             
             log.info("Optimization completed successfully for tour: {}", tourId);

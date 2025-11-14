@@ -1,10 +1,10 @@
 package com.delivrey.service.impl;
 
+import com.delivrey.dao.CustomerDao;
 import com.delivrey.dto.CustomerDto;
 import com.delivrey.entity.Customer;
 import com.delivrey.exception.NotFoundException;
 import com.delivrey.mapper.CustomerMapper;
-import com.delivrey.repository.CustomerRepository;
 import com.delivrey.service.CustomerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 @SuppressWarnings("null") // Suppression des avertissements de nullité pour ce fichier
 public class CustomerServiceImpl implements CustomerService {
 
-    private final CustomerRepository customerRepository;
+    private final CustomerDao customerDao;
     private final CustomerMapper customerMapper;
 
     @Override
@@ -34,7 +34,7 @@ public class CustomerServiceImpl implements CustomerService {
     @NonNull
     public Page<CustomerDto> findAll(@NonNull Pageable pageable) {
         log.debug("Fetching all customers with pagination: {}", pageable);
-        Page<Customer> customers = customerRepository.findAll(pageable);
+        Page<Customer> customers = customerDao.findAll(pageable);
         List<CustomerDto> dtos = customers.getContent().stream()
                 .map(customerMapper::toDto)
                 .filter(Objects::nonNull)
@@ -47,31 +47,18 @@ public class CustomerServiceImpl implements CustomerService {
     @NonNull
     public Optional<CustomerDto> findById(@NonNull Long id) {
         log.debug("Fetching customer with id: {}", id);
-        return customerRepository.findById(id)
-                .map(customer -> {
-                    CustomerDto dto = customerMapper.toDto(customer);
-                    if (dto == null) {
-                        throw new IllegalStateException("Mapping to DTO returned null for customer id: " + id);
-                    }
-                    return dto;
-                });
+        return customerDao.findById(id)
+                .map(customerMapper::toDto);
     }
 
     @Override
     @Transactional
     @NonNull
     public CustomerDto save(@NonNull CustomerDto customerDto) {
-        log.debug("Saving new customer: {}", customerDto);
+        log.debug("Saving customer: {}", customerDto);
         Customer customer = customerMapper.toEntity(customerDto);
-        Customer savedCustomer = customerRepository.save(customer);
-        if (savedCustomer == null) {
-            throw new IllegalStateException("Failed to save customer: returned null");
-        }
-        CustomerDto result = customerMapper.toDto(savedCustomer);
-        if (result == null) {
-            throw new IllegalStateException("Mapping to DTO returned null");
-        }
-        return result;
+        Customer savedCustomer = customerDao.save(customer);
+        return customerMapper.toDto(savedCustomer);
     }
 
     @Override
@@ -79,16 +66,11 @@ public class CustomerServiceImpl implements CustomerService {
     @NonNull
     public CustomerDto update(@NonNull Long id, @NonNull CustomerDto customerDto) {
         log.debug("Updating customer with id {}: {}", id, customerDto);
-        return customerRepository.findById(id)
+        return customerDao.findById(id)
                 .map(existingCustomer -> {
                     customerMapper.updateCustomerFromDto(customerDto, existingCustomer);
-                    Customer updatedCustomer = customerRepository.save(existingCustomer);
-                    log.debug("Updated customer: {}", updatedCustomer);
-                    CustomerDto result = customerMapper.toDto(updatedCustomer);
-                    if (result == null) {
-                        throw new IllegalStateException("Mapping to DTO returned null");
-                    }
-                    return result;
+                    Customer updatedCustomer = customerDao.save(existingCustomer);
+                    return customerMapper.toDto(updatedCustomer);
                 })
                 .orElseThrow(() -> new NotFoundException("Customer not found with id: " + id));
     }
@@ -97,11 +79,10 @@ public class CustomerServiceImpl implements CustomerService {
     @Transactional
     public void deleteById(@NonNull Long id) {
         log.debug("Deleting customer with id: {}", id);
-        if (!customerRepository.existsById(id)) {
+        if (!customerDao.existsById(id)) {
             throw new NotFoundException("Customer not found with id: " + id);
         }
-        customerRepository.deleteById(id);
-        log.debug("Successfully deleted customer with id: {}", id);
+        customerDao.deleteById(id);
     }
 
     @Override
@@ -111,17 +92,19 @@ public class CustomerServiceImpl implements CustomerService {
         log.debug("Searching customers with name: {}, address: {}", name, address);
         Page<Customer> customers;
         if (name != null && address != null) {
-            customers = customerRepository.findByFirstNameContainingIgnoreCaseAndAddressContainingIgnoreCase(name, address, pageable);
+            customers = customerDao.findByFirstNameContainingIgnoreCaseAndAddressContainingIgnoreCase(
+                name, address, pageable);
         } else if (name != null) {
-            customers = customerRepository.findByFirstNameContainingIgnoreCase(name, pageable);
+            customers = customerDao.findByFirstNameContainingIgnoreCase(name, pageable);
         } else if (address != null) {
-            customers = customerRepository.findByAddressContainingIgnoreCase(address, pageable);
+            customers = customerDao.findByAddressContainingIgnoreCase(address, pageable);
         } else {
-            customers = customerRepository.findAll(pageable);
+            customers = customerDao.findAll(pageable);
         }
         
         List<CustomerDto> dtos = customers.getContent().stream()
                 .map(customerMapper::toDto)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
                 
         return new PageImpl<>(dtos, pageable, customers.getTotalElements());
