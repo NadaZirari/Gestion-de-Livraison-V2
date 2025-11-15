@@ -1,9 +1,74 @@
+spring:
+  application:
+    name: delivery-service
+  
+  main:
+    allow-bean-definition-overriding: true
+    web-application-type: servlet
+  
+  datasource:
+    url: "jdbc:h2:mem:deliverydb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE"
+    username: sa
+    password: password
+    driver-class-name: org.h2.Driver
+
+  liquibase:
+    enabled: true
+    change-log: classpath:/db/changelog/db.changelog-master.xml
+    default-schema: PUBLIC
+    user: sa
+    password: password
+    url: jdbc:h2:mem:deliverydb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  h2:
+    console:
+      enabled: false
+
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.h2.H2ConsoleAutoConfiguration
+
 server:
-  port: 8080
+  port: 8082
   servlet:
     context-path: /api
 
-# Configuration SpringDoc (OpenAPI)
+logging:
+  level:
+    root: INFO
+    com.delivrey: DEBUG
+    org.springframework.web: INFO
+    org.hibernate.SQL: DEBUG
+  file:
+    name: logs/application.log
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+app:
+  messages:
+    basename: i18n/messages
+    encoding: UTF-8
+  cache:
+    type: simple
+    cache-names:
+      - customers
+      - deliveries
+      - tours
+
+# Configuration Swagger/OpenAPI
 springdoc:
   api-docs:
     path: /v3/api-docs
@@ -11,142 +76,10 @@ springdoc:
     path: /swagger-ui.html
     operationsSorter: method
     tagsSorter: alpha
+    docExpansion: none
+    filter: true
+    persistAuthorization: true
+    tryItOutEnabled: true
+    syntaxHighlight:
+      activate: true
   show-actuator: true
-  api-docs.enabled: true
-  swagger-ui.enabled: true
-
-# AI Optimizer Configuration
-app:
-  optimizer:
-    ai:
-      enabled: false  # Set to true to enable AI optimization
-      model: gpt-3.5-turbo
-      temperature: 0.7
-
-# Configuration Spring principale
-spring:
-  application:
-    name: delivery-service
-  cloud:
-    function:
-      enabled: false
-  autoconfigure:
-    exclude: org.springframework.cloud.function.context.config.ContextFunctionCatalogAutoConfiguration
-  
-  # Configuration de Liquibase
-  liquibase:
-    change-log: classpath:db/changelog/db.changelog-master.xml
-    
-  # Configuration JPA
-  jpa:
-    open-in-view: false
-    show-sql: true
-    hibernate:
-      ddl-auto: update
-      jdbc:
-        lob:
-          non_contextual_creation: true
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.H2Dialect
-        hbm2ddl:
-          auto: update
-      javax.persistence.schema-generation.database.action: update
-  
-  # Configuration des messages
-  messages:
-    basename: i18n/messages
-    encoding: UTF-8
-    
-  # Configuration du cache
-  cache:
-    type: simple
-    cache-names:
-      - customers
-      - deliveries
-      - tours
-      
-  # Configuration de la base de données H2
-  datasource:
-    url: jdbc:h2:mem:deliverydb
-    driver-class-name: org.h2.Driver
-    username: sa
-    password: 
-    
-  # Configuration de la console H2
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
-      settings:
-        web-allow-others: true
-        trace: false
-        
-  # Configuration du chemin de base
-  web:
-    base-path: /api  # This ensures H2 console works with the context path
-
-# Configuration des logs (peut être surchargée par les profils)
-logging:
-  level:
-    root: INFO
-    org.springframework: INFO
-    com.delivrey: INFO
-  file:
-    name: ${LOG_FILE:logs/application.log}
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
-    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
-
-# Configuration des tâches asynchrones
-task:
-  execution:
-    thread-name-prefix: DeliveryTask-
-    pool:
-      core-size: 4
-      max-size: 10
-      queue-capacity: 100
-      keep-alive: 60s
-  scheduling:
-    pool:
-      size: 5
-    shutdown:
-      await-termination: true
-      await-termination-period: 30s
-
-      hibernate.format_sql: true
-      hibernate.use_sql_comments: true
-      hibernate.type: trace
-      temp:
-          use_jdbc_metadata_defaults: false
-
----
-# QA profile (PostgreSQL)
-spring:
-  config:
-    activate:
-      on-profile: qa
-  datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:delivery_qa}
-    username: ${DB_USER:postgres}
-    password: ${DB_PASSWORD:postgres}
-    driver-class-name: org.postgresql.Driver
-  jpa:
-    show-sql: true
-    hibernate:
-      ddl-auto: validate
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: true
-
-# Liquibase configuration
-liquibase:
-  change-log: classpath:db/changelog/db.changelog-master.xml
-  default-schema: public
-  enabled: true
-  user: ${DB_USER:postgres}
-  password: ${DB_PASSWORD:postgres}
-  url: ${spring.datasource.url}
-  driver: ${spring.datasource.driver-class-name}
-  contexts: qa

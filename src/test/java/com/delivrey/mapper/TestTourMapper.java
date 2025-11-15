@@ -2,8 +2,14 @@ package com.delivrey.mapper;
 
 import com.delivrey.dto.TourDTO;
 import com.delivrey.entity.Tour;
+import com.delivrey.entity.Vehicle;
+import com.delivrey.entity.Warehouse;
 import org.mapstruct.MappingTarget;
+import org.mapstruct.Named;
 import org.springframework.stereotype.Component;
+
+import java.util.Collections;
+import java.util.List;
 
 @Component
 public class TestTourMapper implements TourMapper {
@@ -16,19 +22,26 @@ public class TestTourMapper implements TourMapper {
         
         TourDTO dto = new TourDTO();
         dto.setId(tour.getId());
-        // Copy other fields as needed for testing
+        dto.setDate(tour.getTourDate());
+        dto.setStatus(tour.getTourStatus());
+        if (tour.getVehicle() != null) {
+            dto.setVehicleId(tour.getVehicle().getId());
+        }
+        if (tour.getWarehouse() != null) {
+            dto.setWarehouseId(tour.getWarehouse().getId());
+        }
+        // Pour les tests, on peut ignorer les IDs de livraison ou les initialiser si nécessaire
         return dto;
     }
     
     @Override
-    public Tour toEntity(TourDTO tourDTO) {
-        if (tourDTO == null) {
+    public Tour toEntity(TourDTO dto) {
+        if (dto == null) {
             return null;
         }
         
         Tour tour = new Tour();
-        tour.setId(tourDTO.getId());
-        // Copy other fields as needed for testing
+        updateTourFromDto(dto, tour);
         return tour;
     }
     
@@ -44,6 +57,36 @@ public class TestTourMapper implements TourMapper {
         if (dto.getStatus() != null) {
             tour.setTourStatus(dto.getStatus());
         }
-        // Note: Les livraisons sont ignorées comme spécifié dans le mapper principal
+        // Les autres champs sont gérés par MapStruct
+    }
+    
+    @Named("mapToVehicle")
+    public Vehicle mapToVehicle(Long vehicleId) {
+        if (vehicleId == null) {
+            return null;
+        }
+        Vehicle vehicle = new Vehicle();
+        vehicle.setId(vehicleId);
+        return vehicle;
+    }
+    
+    @Named("mapToWarehouse")
+    public Warehouse mapToWarehouse(Long warehouseId) {
+        if (warehouseId == null) {
+            return null;
+        }
+        Warehouse warehouse = new Warehouse();
+        warehouse.setId(warehouseId);
+        return warehouse;
+    }
+    
+    @Override
+    public List<Long> mapDeliveriesToIds(List<com.delivrey.entity.Delivery> deliveries) {
+        if (deliveries == null) {
+            return Collections.emptyList();
+        }
+        return deliveries.stream()
+                .map(com.delivrey.entity.Delivery::getId)
+                .toList();
     }
 }

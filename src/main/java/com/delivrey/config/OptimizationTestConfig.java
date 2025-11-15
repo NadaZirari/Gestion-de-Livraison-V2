@@ -18,12 +18,13 @@ import java.util.List;
 import java.util.Map;
 
 @Configuration
-@Profile("!cloud")
+@Profile("never") // Désactivé temporairement
 public class OptimizationTestConfig {
 
     @Bean
     @Primary
-    public Optimizer optimizer() {
+    @Qualifier("testOptimizer")
+    public Optimizer testOptimizer() {
         return new Optimizer() {
             @Override
             public OptimizedPlan optimize(List<DeliveryHistoryDto> history, OptimizationConstraints constraints) {
@@ -71,29 +72,9 @@ public class OptimizationTestConfig {
     }
 
     // Clarke-Wright Optimizer
-    @Bean
-    @Qualifier("clarkeWright")
-    public TourOptimizer clarkeWrightOptimizer() {
-        return new TourOptimizer() {
-            @Override
-            public List<Delivery> calculateOptimalTour(List<Delivery> deliveries) {
-                // Return the same list as a simple mock implementation
-                return deliveries;
-            }
-        };
-    }
+    // Supprimer la redéfinition du bean clarkeWrightOptimizer
 
     // Nearest Neighbor Optimizer
-    @Bean
-    @Qualifier("nearestNeighbor")
-    public TourOptimizer nearestNeighborOptimizer() {
-        return new TourOptimizer() {
-            @Override
-            public List<Delivery> calculateOptimalTour(List<Delivery> deliveries) {
-                // Return the same list as a simple mock implementation
-                return deliveries;
-            }
-        };
-    }
+    // Supprimer la redéfinition du bean nearestNeighborOptimizer
     
 }

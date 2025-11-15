@@ -15,9 +15,9 @@ public interface CustomerDao {
     void deleteById(Long id);
     List<Customer> findByNameContainingIgnoreCase(String name);
     Page<Customer> findByAddressContainingIgnoreCase(String address, Pageable pageable);
-    Page<Customer> findByFirstNameContainingIgnoreCase(String firstName, Pageable pageable);
+    Page<Customer> findByFirstNameContainingIgnoreCase(String name, Pageable pageable);
     Page<Customer> findByFirstNameContainingIgnoreCaseAndAddressContainingIgnoreCase(
-        String firstName, String address, Pageable pageable);
+        String name, String address, Pageable pageable);
     List<Customer> findByPreferredTimeSlot(String timeSlot);
     Optional<Customer> findByNameIgnoreCase(String name);
     boolean existsById(Long id);

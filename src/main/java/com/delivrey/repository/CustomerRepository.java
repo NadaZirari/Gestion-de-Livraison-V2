@@ -24,18 +24,18 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     @NonNull
     List<Customer> findByNameContainingIgnoreCase(@NonNull String name);
     
-    // Search customers by first name containing (case-insensitive) with pagination
+    // Search customers by name containing (case-insensitive) with pagination
     @NonNull
-    Page<Customer> findByFirstNameContainingIgnoreCase(@NonNull String firstName, @NonNull Pageable pageable);
+    Page<Customer> findByNameContainingIgnoreCase(@NonNull String name, @NonNull Pageable pageable);
     
     // Search customers by address containing (case-insensitive) with pagination
     @NonNull
     Page<Customer> findByAddressContainingIgnoreCase(@NonNull String address, @NonNull Pageable pageable);
     
-    // Search customers by first name and address containing (case-insensitive) with pagination
+    // Search customers by name and address containing (case-insensitive) with pagination
     @NonNull
-    Page<Customer> findByFirstNameContainingIgnoreCaseAndAddressContainingIgnoreCase(
-        @Nullable String firstName, @Nullable String address, @NonNull Pageable pageable);
+    Page<Customer> findByNameContainingIgnoreCaseAndAddressContainingIgnoreCase(
+        @Nullable String name, @Nullable String address, @NonNull Pageable pageable);
         
     @Override
     @NonNull
@@ -57,17 +57,21 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
         @Param("radiusKm") double radiusKm
     );
     
-    // Find customers near a specific location with pagination
+    // Find customers near a specific location with pagination and search filters
     @Query("""
         SELECT c FROM Customer c 
         WHERE (6371 * acos(cos(radians(:latitude)) * cos(radians(c.latitude)) * 
               cos(radians(c.longitude) - radians(:longitude)) + 
               sin(radians(:latitude)) * sin(radians(c.latitude)))) <= :radiusKm
+        AND (:name IS NULL OR LOWER(c.name) LIKE LOWER(CONCAT('%', :name, '%')))
+        AND (:address IS NULL OR LOWER(c.address) LIKE LOWER(CONCAT('%', :address, '%')))
     """)
     Page<Customer> findNearbyCustomers(
         @Param("latitude") double latitude,
-        @Param("name") @NonNull String name, 
-        @Param("address") @NonNull String address, 
+        @Param("longitude") double longitude,
+        @Param("radiusKm") double radiusKm,
+        @Param("name") @Nullable String name, 
+        @Param("address") @Nullable String address, 
         @NonNull Pageable pageable
     );
 }

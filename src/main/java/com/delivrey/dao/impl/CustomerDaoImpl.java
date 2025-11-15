@@ -57,15 +57,15 @@ public class CustomerDaoImpl implements CustomerDao {
     }
 
     @Override
-    public Page<Customer> findByFirstNameContainingIgnoreCase(String firstName, Pageable pageable) {
-        return customerRepository.findByFirstNameContainingIgnoreCase(firstName, pageable);
+    public Page<Customer> findByFirstNameContainingIgnoreCase(String name, Pageable pageable) {
+        return customerRepository.findByNameContainingIgnoreCase(name, pageable);
     }
 
     @Override
     public Page<Customer> findByFirstNameContainingIgnoreCaseAndAddressContainingIgnoreCase(
-            String firstName, String address, Pageable pageable) {
-        return customerRepository.findByFirstNameContainingIgnoreCaseAndAddressContainingIgnoreCase(
-                firstName, address, pageable);
+            String name, String address, Pageable pageable) {
+        return customerRepository.findByNameContainingIgnoreCaseAndAddressContainingIgnoreCase(
+                name, address, pageable);
     }
 
     @Override

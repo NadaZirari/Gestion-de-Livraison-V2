@@ -10,6 +10,8 @@ import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 import org.mapstruct.ReportingPolicy;
 import org.mapstruct.factory.Mappers;
+import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,9 +19,10 @@ import java.util.stream.Collectors;
 @Mapper(
     componentModel = "spring",
     unmappedTargetPolicy = ReportingPolicy.IGNORE,
-    uses = {DeliveryMapper.class},
-    implementationName = "TourMapperCustomImpl"
+    uses = {DeliveryMapper.class}
 )
+@Primary
+@Component
 public interface TourMapper {
 
     TourMapper INSTANCE = Mappers.getMapper(TourMapper.class);

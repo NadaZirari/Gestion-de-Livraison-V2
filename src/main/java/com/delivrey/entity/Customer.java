@@ -11,6 +11,8 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -38,6 +40,7 @@ public class Customer {
     @Column(name = "preferred_time_slot")
     private String preferredTimeSlot; // Format: "09:00-11:00"
     
+    @Schema(hidden = true)
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Delivery> deliveries = new ArrayList<>();
     

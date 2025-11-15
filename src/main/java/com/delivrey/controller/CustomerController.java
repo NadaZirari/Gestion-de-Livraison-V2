@@ -1,6 +1,7 @@
 package com.delivrey.controller;
 
 import com.delivrey.dto.CustomerDto;
+import com.delivrey.dto.ErrorResponse;
 import com.delivrey.service.CustomerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -197,7 +198,14 @@ public class CustomerController {
             schema = @Schema(implementation = CustomerDto.class),
             examples = @ExampleObject(
                 name = "CustomerExample",
-                value = "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"phone\": \"+1234567890\",\n  \"address\": \"123 Main St, City, Country\"\n}"
+                value = """
+                {
+                  "name": "John Doe",
+                  "address": "123 Main St, City, Country",
+                  "latitude": 48.8566,
+                  "longitude": 2.3522,
+                  "preferredTimeSlot": "09:00-11:00"
+                }"""
             )
         )
     )
@@ -213,10 +221,21 @@ public class CustomerController {
         @ApiResponse(
             responseCode = "400",
             description = "Données du client invalides",
-            content = @Content
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Erreur interne du serveur",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class)
+            )
         )
     })
-    public ResponseEntity<CustomerDto> createCustomer(
+    public ResponseEntity<?> createCustomer(
             @Valid @RequestBody CustomerDto customerDto) {
         try {
             log.info("Creating new customer: {}", customerDto);
@@ -226,7 +245,9 @@ public class CustomerController {
                     .body(savedCustomer);
         } catch (Exception e) {
             log.error("Error creating customer: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse("INTERNAL_SERVER_ERROR", e.getMessage()));
         }
     }
 

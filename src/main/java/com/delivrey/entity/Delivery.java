@@ -10,6 +10,8 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 /**
  * Represents a delivery that needs to be made to a customer.
  * Contains delivery details including location, dimensions, and status.
@@ -28,6 +30,7 @@ public class Delivery {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false)
+    @Schema(hidden = true)
     private Customer customer;
     
     @Column(name = "DELIVERY_ADDRESS", nullable = false)
