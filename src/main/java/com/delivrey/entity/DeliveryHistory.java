@@ -1,9 +1,8 @@
 package com.delivrey.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.Accessors;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -17,6 +16,7 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 @AllArgsConstructor
 @Entity
 @Table(name = "delivery_history")
+@Accessors(chain = true)
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 
 public class DeliveryHistory {
