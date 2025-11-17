@@ -165,9 +165,9 @@ mvn spring-boot:run
 
 3️⃣ Accéder :
 
-Swagger : http://localhost:8080/swagger-ui.html
+Swagger : http://localhost:8082/swagger-ui.html
 
-H2 console : http://localhost:8080/h2-console
+H2 console : http://localhost:8082/h2-console
 
 ## 📦 Améliorations prévues (V3)
 
