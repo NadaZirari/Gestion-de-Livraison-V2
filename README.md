@@ -127,6 +127,11 @@ GET	/api/customers/nearby	Rechercher par latitude/longitude
 POST	/api/vehicles	Ajouter un véhicule
 GET	/api/vehicles	Liste des véhicules
 
+
+## Diagramme de classe 
+
+<img width="569" height="376" alt="Capture d&#39;écran 2025-11-15 234923" src="https://github.com/user-attachments/assets/147acbe6-2df4-42a3-86df-197de5079c9b" />
+
 ## 🧱 Technologies utilisées
 
 Technologie	Rôle
@@ -172,7 +177,7 @@ Algorithme d’optimisation (plus court chemin + disponibilité)
 
 Ajout de Spring Security (JWT)
 
-Dashboard statistiques
+
 
 📝 Auteur
 
