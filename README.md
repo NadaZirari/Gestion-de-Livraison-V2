@@ -1,190 +1,179 @@
-## Delivery Management System
+## Delivery Management System — Version V2
 
-# 🧩 Description du projet
+Un système complet de gestion de livraisons développé avec Spring Boot 3, intégré avec H2, Spring Data JPA, SpringDoc Swagger, et une architecture optimisée en couches (Controller → Service → Repository).
 
-Le projet Delivery est une application Spring basée sur une architecture n-tiers (Controller – Service – Repository).
-Il permet de gérer les livraisons, les tournées et les entrepôts (warehouses).
-Le système applique une configuration hybride :
+ ## 📌 📖 Description du projet
 
-Les propriétés de la base de données sont configurées dans application.properties.
+La version V2 améliore la première version en ajoutant :
 
-L’injection de dépendances et la gestion des beans sont faites via applicationContext.xml, sans utiliser d’annotations comme @Autowired, @Service, @Repository, ou @Component.
+Une architecture logicielle propre (Controller / Service / Repository).
 
-## ⚙️ Technologies utilisées
+Une gestion complète des entités : Customer, Vehicle, Delivery, DeliveryHistory.
 
-Java 17
+L’utilisation de DTOs pour séparer les couches et améliorer Swagger UI.
 
-Spring Framework 6
+Une configuration H2 en mémoire avec Liquibase pour charger les données.
 
-Spring Data JPA
+Une documentation API automatique avec Swagger (SpringDoc OpenAPI).
 
-Hibernate
+Une gestion correcte des relations JPA + optimisation des insertions.
 
-Maven
+Un système d’erreurs plus propre et standardisé.
 
-H2 Database (ou PostgreSQL selon le profil)
+## 🏗️ Architecture du Projet
 
-Swagger UI (pour la documentation REST)
+src/main/java
+└── com.delivery
+    ├── controller
+    │   └── DeliveryController.java
+    ├── service
+    │   ├── DeliveryService.java
+    │   └── impl/DeliveryServiceImpl.java
+    ├── repository
+    │   └── DeliveryRepository.java
+    ├── dto
+    │   └── DeliveryDTO.java
+    ├── entity
+    │   ├── Customer.java
+    │   ├── Delivery.java
+    │   ├── Vehicle.java
+    │   └── DeliveryHistory.java
+    └── exception
+        └── GlobalExceptionHandler.java
 
-JUnit 5 (tests unitaires)
+## 🗂️ Fonctionnalités principales
+# ✔️ Gestion des Clients (Customer)
 
-applicationContext.xml (configuration manuelle des beans)
+Ajouter un client
 
+Trouver des clients par adresse, position, créneau horaire
 
+Récupérer un client + détails
 
-## 🗂️ Structure du projet
+# ✔️ Gestion des Véhicules (Vehicle)
 
-src/main/java/com/delivrey
- ├── config/
- │    └── applicationContext.xml
- ├── controller/
- │    └── DeliveryController.java
- ├── entity/
- │    ├── Delivery.java
- │    ├── Tour.java
- │    └── Warehouse.java
- ├── repository/
- │    ├── DeliveryRepository.java
- │    ├── TourRepository.java
- │    └── WarehouseRepository.java
- ├── service/
- │    ├── DeliveryService.java
- │    └── impl/DeliveryServiceImpl.java
- └── DeliveryApplication.java
+Ajouter un véhicule (type, capacité, volume, poids maximal)
 
+Récupérer la liste des véhicules
 
-## Endpoints REST – Delivery Management System
- # 1️⃣ Vehicles (/vehicles)
+# ✔️ Gestion des Livraisons (Delivery)
 
-GET /vehicles : Liste tous les véhicules
+Créer une livraison
 
-GET /vehicles/{id} : Récupère un véhicule par ID
+Assigner un véhicule
 
-POST /vehicles : Crée un nouveau véhicule (JSON)
+Mettre à jour le statut
 
-PUT /vehicles/{id} : Met à jour un véhicule existant (JSON)
+Planifier des horaires préférés (preferredFrom / preferredTo)
 
-DELETE /vehicles/{id} : Supprime un véhicule
+# ✔️ Historique de Livraison (DeliveryHistory)
 
-# 2️⃣ Deliveries (/deliveries)
+Suivre les événements :
 
-GET /deliveries : Liste toutes les livraisons
+CREATED
 
-GET /deliveries/{id} : Récupère une livraison par ID
+ASSIGNED
 
-POST /deliveries : Crée une nouvelle livraison (JSON)
+IN_PROGRESS
 
-PUT /deliveries/{id} : Met à jour une livraison existante (JSON)
+COMPLETED
 
-DELETE /deliveries/{id} : Supprime une livraison
+FAILED
 
-# 3️⃣ Tours (/tours)
+## ✔️ Documentation Swagger UI
 
-GET /tours : Liste toutes les tournées
+Disponible automatiquement ici :
+👉 /swagger-ui.html
+👉 /api/v3/api-docs
 
-GET /tours/{id} : Récupère une tournée par ID
+## 🛢️ Base de données
 
-POST /tours : Crée une nouvelle tournée (JSON)
+Cette version utilise H2 en mémoire :
 
-PUT /tours/{id} : Met à jour une tournée existante (JSON)
+📍 Configuration H2 (application.yml)
+spring:
+  datasource:
+    url: jdbc:h2:mem:deliverydb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password: password
+    driver-class-name: org.h2.Driver
 
-DELETE /tours/{id} : Supprime une tournée
-
-# 4️⃣ Warehouses (/warehouses)
-
-GET /warehouses : Liste tous les entrepôts
-
-GET /warehouses/{id} : Récupère un entrepôt par ID
-
-POST /warehouses : Crée un nouvel entrepôt (JSON)
-
-PUT /warehouses/{id} : Met à jour un entrepôt existant (JSON)
-
-DELETE /warehouses/{id} : Supprime un entrepôt
-
-
-## 💡 Règles respectées
-
-✅ Pas d’injection via annotations (@Autowired, @Service, etc.)
-✅ Beans configurés via XML (applicationContext.xml)
-✅ Utilisation de <jpa:repositories> au lieu de @Repository
-✅ Propriétés externes dans application.properties
-
-## run the packaged jar:
-
-java -jar target/Delivery-0.0.1-SNAPSHOT.jar
-
-
-## Lancement du projet
-
-# Compiler le projet :
-
-mvn clean install
-
-
-# Exécuter :
-
-mvn spring-boot:run
-
-
-# Accéder à :
-
-Swagger UI → http://localhost:8080/swagger-ui.html
-
-H2 Console → http://localhost:8080/h2-console
-
-## Algorithmics / Logic and Optimization
-
-This project implements routing and delivery optimization for a delivery management system. The main algorithmic components are:
-
-# Nearest Neighbor Algorithm (NN)
-
-Used to create initial delivery routes.
-
-For each delivery, the algorithm selects the next closest unvisited delivery location.
-
-Produces a fast initial solution but may not be globally optimal.
-
-# Clarke-Wright Savings Algorithm (CW)
-
-Used to optimize and merge delivery routes for efficiency.
-
-Calculates “savings” by combining routes and minimizing the total distance traveled.
-
-Iteratively merges routes until no further savings are possible.
-
-## Seed data (executed on startup)
-
-File: src/main/resources/data.sql
-
-Creates:
-
-1 Warehouse (id=1)
-3 Vehicles (id=1..3): BIKE, VAN, TRUCK
-Deliveries (id=100..119)
-
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+🔧 Liquibase activé
+
+Chargement automatique des tables
+
+Chargement des données d’exemple
+
+## 🔗 Endpoints REST principaux
+🚚 Delivery
+Méthode	Endpoint	Description
+POST	/api/delivery	Créer une livraison
+GET	/api/delivery/{id}	Récupérer une livraison
+PUT	/api/delivery/{id}/status	Mettre à jour le statut
+👤 Customer
+
+# Méthode	Endpoint	Description
+POST	/api/customers	Ajouter un client
+GET	/api/customers/address	Rechercher un client par adresse
+GET	/api/customers/nearby	Rechercher par latitude/longitude
+🚗 Vehicle
+
+# Méthode	Endpoint	Description
+POST	/api/vehicles	Ajouter un véhicule
+GET	/api/vehicles	Liste des véhicules
+
+## 🧱 Technologies utilisées
+
+Technologie	Rôle
+Spring Boot 3	Framework backend
+Spring Web	API REST
+Spring Data JPA	Interaction BD
+H2 Database	BD en mémoire
+Liquibase	Migrations
+Lombok	Réduction du boilerplate
+SpringDoc OpenAPI	Documentation Swagger
+JUnit / Mockito	Tests unitaires
 
 ## 🧪 Tests
 
-Les tests unitaires sont placés dans src/test/java/com/delivrey/service/impl.
+La version V2 inclut :
 
-Pour les exécuter :
+Tests unitaires sur le Service Layer
 
-#mvn test
+Tests MockMvc sur les contrôleurs
 
+Tests DAO avec H2
 
+## 🚀 Lancement du projet
 
-## ScreenShots
-<img width="1868" height="866" alt="image" src="https://github.com/user-attachments/assets/12fc295e-7626-49da-8948-8a624e140274" />
+1️⃣ Cloner le projet
+git clone https://github.com/username/Gestion-de-Livraison-V2.git
+cd Gestion-de-Livraison-V2
 
+2️⃣ Lancer l'application
+mvn spring-boot:run
 
-<img width="297" height="263" alt="image" src="https://github.com/user-attachments/assets/a4c328c8-5c51-46e6-9db8-862916773af7" />
+3️⃣ Accéder :
 
+Swagger : http://localhost:8080/swagger-ui.html
 
-## 👩‍💻 Auteur
+H2 console : http://localhost:8080/h2-console
 
-Projet développé par Nada – Étudiante en développement Java Spring
-📅 Année : 2025
+## 📦 Améliorations prévues (V3)
 
+Optimisation du routing des véhicules
 
+Algorithme d’optimisation (plus court chemin + disponibilité)
 
+Ajout de Spring Security (JWT)
+
+Dashboard statistiques
+
+📝 Auteur
+
+Nada — Full Stack Developer Student
