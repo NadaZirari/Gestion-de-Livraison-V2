@@ -5,7 +5,6 @@ import com.delivrey.entity.DeliveryStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -26,11 +25,12 @@ class DeliveryServiceTest {
 
     @BeforeEach
     void setUp() {
-        // Création d'un objet de test
-        testDelivery = new DeliveryDTO();
-        testDelivery.setId(1L);
-        testDelivery.setStatus(DeliveryStatus.PENDING);
-        testDelivery.setCustomerId(100L);
+        // Création d'un objet de test avec le builder de Lombok
+        testDelivery = DeliveryDTO.builder()
+                .id(1L)
+                .status(DeliveryStatus.PENDING)
+                .customerId(100L)
+                .build();
     }
 
     @Test
@@ -65,9 +65,10 @@ class DeliveryServiceTest {
     @Test
     void updateDeliveryStatus_ShouldUpdateStatus() {
         // Arrange
-        DeliveryDTO updatedDelivery = new DeliveryDTO();
-        updatedDelivery.setId(1L);
-        updatedDelivery.setStatus(DeliveryStatus.DELIVERED);
+        DeliveryDTO updatedDelivery = DeliveryDTO.builder()
+                .id(1L)
+                .status(DeliveryStatus.DELIVERED)
+                .build();
 
         when(deliveryService.updateDeliveryStatus(1L, DeliveryStatus.DELIVERED)).thenReturn(updatedDelivery);
 
